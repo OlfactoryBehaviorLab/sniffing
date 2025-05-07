@@ -95,8 +95,9 @@ def main():
                                                        exhale_times, crossings, trial_number, plot_output_dir)
                 results_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}.xlsx')
                 results.to_excel(results_path)
-        except Exception:
+        except Exception as e:
             print(f'Error processing H5 file {h5_file_path}')
+            print(e)
 
 
 if __name__ == '__main__':
