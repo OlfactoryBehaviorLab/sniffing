@@ -47,13 +47,13 @@ def main():
                 experiment_concentration = "".join(np.format_float_scientific(_concentration, 1).split('.'))
                 file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', experiment_concentration)
 
-                bp_filter = signal.cheby2(2, 40, [lower_filter_band, upper_filter_band], 'bandpass', output='sos',
+                bp_filter = signal.cheby2(2, 40, [LOWER_FILTER_BAND, UPPER_FILTER_BAND], 'bandpass', output='sos',
                                           fs=1000)
                 filtered_traces = preprocessing.filter_sniff_traces(h5.sniff, bp_filter, baseline=True, z_score=True)
 
                 for trial_number in h5.sniff.keys():
-                    raw_data = h5.sniff[trial_number].loc[pre_fv_time:]
-                    filtered_trimmed_trace = filtered_traces[trial_number].loc[pre_fv_time:]
+                    raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
+                    filtered_trimmed_trace = filtered_traces[trial_number].loc[PRE_FV_TIME:]
                     # plotting.plot_multi_traces([raw_data, filtered_trimmed_trace])
                     inhales, exhales, crossings = preprocessing.get_trace_features(filtered_trimmed_trace)
                     crossing_pairs = np.fromiter(zip(crossings[:-1], crossings[1:]), dtype=object)
