@@ -44,7 +44,13 @@ def main():
 
             with DewanH5(h5_file_path) as h5:
                 results = pd.DataFrame()
-                _concentration = h5.concentrations[h5.concentrations > 0][0]
+
+                # For the blank experiments, the only concentration is zero
+                if len(h5.concentrations) == 1:
+                    _concentration = h5.concentrations
+                else:
+                    _concentration = h5.concentrations[h5.concentrations > 0][0]
+
                 experiment_concentration = "".join(np.format_float_scientific(_concentration, 1).split('.'))
                 file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', experiment_concentration)
 
