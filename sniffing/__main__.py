@@ -4,6 +4,7 @@ from . import preprocessing, plotting, analysis
 import pandas as pd
 import numpy as np
 from scipy import signal
+from tqdm.auto import tqdm
 
 import argparse
 from pathlib import Path
@@ -34,10 +35,10 @@ def main():
     else:
         output_dir = data_dir.joinpath('output')
 
-    h5_files = Path(data_dir).glob('*.h5')
+    h5_files = list(data_dir.glob('*.h5'))
     output_dir.mkdir(exist_ok=True)
 
-    for h5_file_path in h5_files:
+    for h5_file_path in tqdm(h5_files, total=len(h5_files), desc='Processing H5 Files:'):
         try:
             print(f'Processing {h5_file_path.name}')
 
