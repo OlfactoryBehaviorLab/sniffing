@@ -19,6 +19,11 @@ dependencies = [
     "dewan_h5>=1.1.0"
 ]
 
+[project.optional-dependencies]
+jupyter = ["jupyter"]
+
+
+
 [project.urls]
 "Homepage" = "https://github.com/olfactorybehaviorlab/sniffing_dynamics"
 
@@ -27,6 +32,6 @@ packages=['sniffing']
 
 # The following would provide a command line executable called `sample`
 # which executes the function `main` from this package when invoked.
-#[project.scripts]
-#sample = "sample:main"
+[project.scripts]
+sniffing_analysis = "sniffing.__main__:main"
 

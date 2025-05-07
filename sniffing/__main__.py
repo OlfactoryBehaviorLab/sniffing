@@ -1,5 +1,5 @@
 from dewan_h5 import DewanH5
-from sniffing_dynamics.sniffing import preprocessing, plotting, analysis
+from . import preprocessing, plotting, analysis
 
 import pandas as pd
 import numpy as np
