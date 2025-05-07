@@ -51,15 +51,15 @@ def main():
                 else:
                     _concentration = h5.concentrations[h5.concentrations > 0][0]
 
-                experiment_concentration = "".join(np.format_float_scientific(_concentration, 1).split('.'))
+                experiment_concentration = np.format_float_scientific(_concentration, 1)
                 file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', experiment_concentration)
 
-                bp_filter = signal.cheby2(2, 40, [LOWER_FILTER_BAND, UPPER_FILTER_BAND], 'bandpass', output='sos',
-                                          fs=1000)
+                bp_filter = signal.cheby2(2, 40, [LOWER_FILTER_BAND, UPPER_FILTER_BAND], 'bandpass',
+                                          output='sos', fs=1000)
                 filtered_traces = preprocessing.filter_sniff_traces(h5.sniff, bp_filter, baseline=True, z_score=True)
 
                 for trial_number in filtered_traces.keys():
-                    raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
+                    # raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[PRE_FV_TIME:]
                     # plotting.plot_multi_traces([raw_data, filtered_trimmed_trace])
                     inhales, exhales, crossings = preprocessing.get_trace_features(filtered_trimmed_trace)
@@ -79,6 +79,7 @@ def main():
                     if first_crossing > 0:
                         crossings = preprocessing.offset_timestamps(first_crossing, filtered_trimmed_trace,
                                                                     true_inhales, true_exhales, crossings)
+
                     inhale_frequencies, exhale_frequencies, inhale_times, exhale_times = analysis.calc_frequencies(
                         true_inhales, true_exhales)
 
@@ -90,9 +91,9 @@ def main():
 
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
-                    plotting.plot_crossing_frequencies(filtered_trimmed_trace, true_inhales, true_exhales,
-                                                       inhale_frequencies, exhale_frequencies, inhale_times,
-                                                       exhale_times, crossings, trial_number, plot_output_dir)
+                    # plotting.plot_crossing_frequencies(filtered_trimmed_trace, true_inhales, true_exhales,
+                    #                                    inhale_frequencies, exhale_frequencies, inhale_times,
+                    #                                    exhale_times, crossings, trial_number, plot_output_dir)
                 results_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}.xlsx')
                 results.to_excel(results_path)
         except Exception as e:
