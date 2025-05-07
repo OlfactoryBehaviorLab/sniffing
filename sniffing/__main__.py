@@ -62,6 +62,11 @@ def main():
                     true_inhales, true_exhales = preprocessing.get_true_peaks(inhales, exhales, crossing_pairs)
 
                     true_inhales_post_fv = true_inhales.loc[0:]
+
+                    if len(true_inhales_post_fv) == 0:
+                        print(f'{trial_number} has no inhales after the FV!')
+                        continue
+
                     first_true_inhale = true_inhales_post_fv.iloc[0]
                     first_crossing = first_true_inhale['crossing']
 
