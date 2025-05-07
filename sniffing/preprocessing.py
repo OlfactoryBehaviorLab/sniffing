@@ -22,6 +22,11 @@ def filter_sniff_traces(sniff_traces: dict, filter, baseline:bool=False, z_score
     baseline_filter = signal.butter(2, 1, 'highpass', output='sos', fs=1000)
     for name, trace in sniff_traces.items():
         index = trace.index
+        # smoothed_data = signal.savgol_filter(trace, 3, 2)
+        if trace.shape[0] == 0:
+            print(f'{name} has no sniff data, skipping!')
+            continue
+
         filtered_trace = signal.sosfiltfilt(filter, trace)
         if baseline:
             filtered_trace = signal.sosfiltfilt(baseline_filter, filtered_trace)

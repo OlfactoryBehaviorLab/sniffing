@@ -51,7 +51,7 @@ def main():
                                           fs=1000)
                 filtered_traces = preprocessing.filter_sniff_traces(h5.sniff, bp_filter, baseline=True, z_score=True)
 
-                for trial_number in h5.sniff.keys():
+                for trial_number in filtered_traces.keys():
                     raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[PRE_FV_TIME:]
                     # plotting.plot_multi_traces([raw_data, filtered_trimmed_trace])
