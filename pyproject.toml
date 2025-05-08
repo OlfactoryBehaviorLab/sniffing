@@ -16,7 +16,8 @@ dependencies = [
     "numpy",
     "pandas",
     "scipy",
-    "dewan_h5>=1.1.0"
+    "dewan_h5>=1.1.0",
+    "tqdm"
 ]
 
 [project.optional-dependencies]
