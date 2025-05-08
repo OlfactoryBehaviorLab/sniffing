@@ -10,9 +10,11 @@ from tqdm.auto import tqdm
 LOWER_FILTER_BAND = 0.01  # Lower Frequency (Hz)
 UPPER_FILTER_BAND = 100  # Upper Frequency (Hz)
 PRE_FV_TIME = -1000  # ms before FV
-
+MAX_POST_FV_TIME = 2000 # ms after FV
+BIN_SIZE = 50 # ms
 
 def process_files(h5_files, output_dir, plot_figs=False):
+    bins = np.arange(2*PRE_FV_TIME, MAX_POST_FV_TIME, BIN_SIZE)
     for h5_file_path in tqdm(h5_files, total=len(h5_files), desc='Processing H5 Files:'):
         try:
             print(f'Processing {h5_file_path.name}')
@@ -32,6 +34,8 @@ def process_files(h5_files, output_dir, plot_figs=False):
                 bp_filter = signal.cheby2(2, 40, [LOWER_FILTER_BAND, UPPER_FILTER_BAND], 'bandpass',
                                           output='sos', fs=1000)
                 filtered_traces = preprocessing.filter_sniff_traces(h5.sniff, bp_filter, baseline=True, z_score=True)
+                filtered_trial_names = list(filtered_traces.keys())
+                inhale_bins = pd.DataFrame(0, index=filtered_trial_names, columns=bins)
 
                 for trial_number in filtered_traces.keys():
                     # raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
@@ -55,6 +59,8 @@ def process_files(h5_files, output_dir, plot_figs=False):
                         crossings = preprocessing.offset_timestamps(first_crossing, filtered_trimmed_trace,
                                                                     true_inhales, true_exhales, crossings)
 
+                    preprocessing.get_bin_counts(trial_number, true_inhales, inhale_bins)
+
                     inhale_frequencies, exhale_frequencies, inhale_times, exhale_times = analysis.calc_frequencies(
                         true_inhales, true_exhales)
 
@@ -70,8 +76,21 @@ def process_files(h5_files, output_dir, plot_figs=False):
                         plotting.plot_crossing_frequencies(filtered_trimmed_trace, true_inhales, true_exhales,
                                                            inhale_frequencies, exhale_frequencies, inhale_times,
                                                            exhale_times, crossings, trial_number, plot_output_dir)
+
+                trial_types = h5.trial_parameters.loc[filtered_trial_names, 'trial_type']
+                trial_results = h5.trial_parameters.loc[filtered_trial_names, 'result']
+
+                inhale_bins.insert(0, 'trial_type', trial_types)
+                inhale_bins.insert(1, 'results', trial_results)
+
                 results_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}.xlsx')
                 results.to_excel(results_path)
+
+                bins_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}-bins.xlsx')
+                inhale_bins.to_excel(bins_path)
+
+                h5.export(file_output_dir)
+
         except Exception as e:
             print(f'Error processing H5 file {h5_file_path}')
             print(e)
