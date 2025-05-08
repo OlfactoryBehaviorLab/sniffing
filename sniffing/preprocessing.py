@@ -139,3 +139,9 @@ def offset_timestamps(offset, trace, true_inhales, true_exhales, crossings):
     # Everything else is a dataframe that is directly edited, crossings has to be returned
     return crossings - offset
 
+
+def get_bin_counts(trial_number, true_inhales, inhale_bins_df):
+    for inhale in true_inhales.index:
+        inhale_bin_index = np.where(inhale >= inhale_bins_df.columns)[0][-1]
+        inhale_bin = inhale_bins_df.columns[inhale_bin_index]
+        inhale_bins_df.loc[trial_number, inhale_bin] += 1
