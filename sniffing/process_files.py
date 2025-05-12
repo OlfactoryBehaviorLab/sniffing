@@ -21,7 +21,7 @@ def process_files(h5_files, output_dir, plot_figs=False):
 
             with DewanH5(h5_file_path) as h5:
                 results = pd.DataFrame()
-
+                all_inhalation_durations = pd.DataFrame()
                 # For the blank experiments, the only concentration is zero
                 if len(h5.concentrations) == 1:
                     _concentration = h5.concentrations
@@ -46,14 +46,16 @@ def process_files(h5_files, output_dir, plot_figs=False):
 
                     true_inhales, true_exhales = preprocessing.get_true_peaks(inhales, exhales, crossing_pairs)
 
+                    inhalation_durations = preprocessing.inhalation_durations(true_inhales)
+
                     true_inhales_post_fv = true_inhales.loc[0:]
 
                     if len(true_inhales_post_fv) == 0:
                         print(f'{trial_number} has no inhales after the FV!')
                         continue
 
-                    first_true_inhale = true_inhales_post_fv.iloc[0]
-                    first_crossing = first_true_inhale['crossing']
+                    # first_true_inhale = true_inhales_post_fv.iloc[0]
+                    # first_crossing = first_true_inhale['crossing']
 
                     # if first_crossing > 0:
                     #     crossings = preprocessing.offset_timestamps(first_crossing, filtered_trimmed_trace,
@@ -69,6 +71,10 @@ def process_files(h5_files, output_dir, plot_figs=False):
                     all_trial_data = pd.DataFrame(zip(inhale_times, inhale_frequencies), columns=_columns)
 
                     results = pd.concat([results, all_trial_data], axis=1)
+
+                    _columns = pd.MultiIndex.from_product([[trial_number], ['timestamp', 'duration']], names=['Trial', 'Inhales'])
+                    inhalation_durations.columns = _columns
+                    all_inhalation_durations = pd.concat([all_inhalation_durations, inhalation_durations], axis=1)
 
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
@@ -88,6 +94,9 @@ def process_files(h5_files, output_dir, plot_figs=False):
 
                 bins_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}-bins.xlsx')
                 inhale_bins.to_excel(bins_path)
+
+                inhalation_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}-inhalation_durations.xlsx')
+                all_inhalation_durations.to_excel(inhalation_path)
 
                 h5.export(file_output_dir)
 

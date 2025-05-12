@@ -78,7 +78,9 @@ def get_true_peaks(inhales: pd.Series, exhales: pd.Series, crossing_pairs: np.ar
     true_exhales_y = []
 
     inhales_prev_cross = []
+    inhales_next_cross = []
     exhales_prev_cross = []
+    exhales_next_cross = []
     for first_cross, second_cross in crossing_pairs:
 
         inhale_peaks_mask = inhales.between(first_cross, second_cross)
@@ -119,13 +121,20 @@ def get_true_peaks(inhales: pd.Series, exhales: pd.Series, crossing_pairs: np.ar
             true_inhales_x.extend(possible_inhale.values)
             true_inhales_y.extend(possible_inhale.index.values)
             inhales_prev_cross.extend([first_cross])
+            inhales_next_cross.extend([second_cross])
         else:
             true_exhales_x.extend(possible_exhale.values)
             true_exhales_y.extend(possible_exhale.index.values)
             exhales_prev_cross.extend([first_cross])
+            exhales_next_cross.extend([second_cross])
 
-    true_inhales = pd.DataFrame({'magnitude': true_inhales_y, 'crossing': inhales_prev_cross}, index=true_inhales_x)
-    true_exhales = pd.DataFrame({'magnitude': true_exhales_y, 'crossing': exhales_prev_cross}, index=true_exhales_x)
+    true_inhales = pd.DataFrame(
+        {'magnitude': true_inhales_y, 'inhale_start': inhales_prev_cross, 'inhale_end': inhales_next_cross},
+        index=true_inhales_x
+    )
+    true_exhales = pd.DataFrame(
+        {'magnitude': true_exhales_y, 'exhale_start': exhales_prev_cross, 'exhale_end' :exhales_next_cross},
+        index=true_exhales_x)
 
     return true_inhales, true_exhales
 
@@ -133,8 +142,8 @@ def get_true_peaks(inhales: pd.Series, exhales: pd.Series, crossing_pairs: np.ar
 def offset_timestamps(offset, trace, true_inhales, true_exhales, crossings):
     true_inhales.index = true_inhales.index - offset
     true_exhales.index = true_exhales.index - offset
-    true_inhales.loc[:, 'crossing'] = true_inhales.loc[:, 'crossing'] - offset
-    true_exhales.loc[:, 'crossing'] = true_exhales.loc[:, 'crossing'] - offset
+    true_inhales.loc[:, 'inhale_start'] = true_inhales.loc[:, 'inhale_start'] - offset
+    true_exhales.loc[:, 'exhale_start'] = true_exhales.loc[:, 'exhale_start'] - offset
     trace.index = trace.index - offset
     # Everything else is a dataframe that is directly edited, crossings has to be returned
     return crossings - offset
@@ -145,3 +154,15 @@ def get_bin_counts(trial_number, true_inhales, inhale_bins_df):
         inhale_bin_index = np.where(inhale >= inhale_bins_df.columns)[0][-1]
         inhale_bin = inhale_bins_df.columns[inhale_bin_index]
         inhale_bins_df.loc[trial_number, inhale_bin] += 1
+
+
+def inhalation_durations(true_inhales: pd.DataFrame):
+    durations = []
+    for name, inhale in true_inhales.iterrows():
+        _duration = inhale['inhale_end'] - inhale['inhale_start']
+        durations.append(_duration)
+
+    return pd.DataFrame(zip(true_inhales.index, durations), columns=['timestamp', 'duration'])
+
+
+
