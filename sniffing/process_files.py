@@ -55,9 +55,9 @@ def process_files(h5_files, output_dir, plot_figs=False):
                     first_true_inhale = true_inhales_post_fv.iloc[0]
                     first_crossing = first_true_inhale['crossing']
 
-                    if first_crossing > 0:
-                        crossings = preprocessing.offset_timestamps(first_crossing, filtered_trimmed_trace,
-                                                                    true_inhales, true_exhales, crossings)
+                    # if first_crossing > 0:
+                    #     crossings = preprocessing.offset_timestamps(first_crossing, filtered_trimmed_trace,
+                    #                                                 true_inhales, true_exhales, crossings)
 
                     preprocessing.get_bin_counts(trial_number, true_inhales, inhale_bins)
 
