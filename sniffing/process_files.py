@@ -61,6 +61,8 @@ def process_files(h5_files, output_dir, plot_figs=False):
                     inhale_frequencies, exhale_frequencies, inhale_times, exhale_times = analysis.calc_frequencies(
                         true_inhales, true_exhales)
 
+                    analysis.trial_fft(filtered_trimmed_trace.loc[0:400])
+
                     _columns = pd.MultiIndex.from_product([[trial_number], ['inhale_time', 'inhale_freq']],
                                                           names=['Trial', 'Data'])
                     all_trial_data = pd.DataFrame(zip(inhale_times, inhale_frequencies), columns=_columns)
@@ -97,4 +99,4 @@ def process_files(h5_files, output_dir, plot_figs=False):
 
         except Exception as e:
             print(f'Error processing H5 file {h5_file_path}')
-            print(e)
+            raise e
