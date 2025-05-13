@@ -1,4 +1,4 @@
-from dewan_h5 import DewanH5
+from dewan_h5_git.dewan_h5 import DewanH5
 from .helpers import preprocessing, analysis, plotting
 
 import pandas as pd
@@ -22,14 +22,9 @@ def process_files(h5_files, output_dir, plot_figs=False):
             with DewanH5(h5_file_path) as h5:
                 results = pd.DataFrame()
                 all_inhalation_durations = pd.DataFrame()
-                # For the blank experiments, the only concentration is zero
-                if len(h5.concentrations) == 1:
-                    _concentration = h5.concentrations
-                else:
-                    _concentration = h5.concentrations[h5.concentrations > 0][0]
 
-                experiment_concentration = np.format_float_scientific(_concentration, 1)
-                file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', experiment_concentration)
+                _concentration = np.format_float_scientific(h5.concentration, 1)
+                file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', _concentration)
 
                 bp_filter = signal.cheby2(2, 40, [LOWER_FILTER_BAND, UPPER_FILTER_BAND], 'bandpass',
                                           output='sos', fs=1000)
@@ -89,13 +84,13 @@ def process_files(h5_files, output_dir, plot_figs=False):
                 inhale_bins.insert(0, 'trial_type', trial_types)
                 inhale_bins.insert(1, 'results', trial_results)
 
-                results_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}.xlsx')
+                results_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{_concentration}.xlsx')
                 results.to_excel(results_path)
 
-                bins_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}-bins.xlsx')
+                bins_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{_concentration}-bins.xlsx')
                 inhale_bins.to_excel(bins_path)
 
-                inhalation_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{experiment_concentration}-inhalation_durations.xlsx')
+                inhalation_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{_concentration}-inhalation_durations.xlsx')
                 all_inhalation_durations.to_excel(inhalation_path)
 
                 h5.export(file_output_dir)
