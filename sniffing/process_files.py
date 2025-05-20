@@ -23,8 +23,9 @@ def process_files(h5_files, output_dir, plot_figs=False):
                 results = pd.DataFrame()
                 all_inhalation_durations = pd.DataFrame()
 
-                _concentration = np.format_float_scientific(h5.concentration, 1)
-                file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', _concentration)
+                # _concentration = np.format_float_scientific(h5.concentration, 1)
+                file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', h5.concentration)
+                file_output_dir.mkdir(exist_ok=True, parents=True)
 
                 bp_filter = signal.cheby2(2, 40, [LOWER_FILTER_BAND, UPPER_FILTER_BAND], 'bandpass',
                                           output='sos', fs=1000)
