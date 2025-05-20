@@ -28,10 +28,10 @@ def _calc_freq(counts, bin_dur_ms):
     if counts == 0:
         return 0
     else:
-        return 1 / (counts / (bin_dur_ms / 1000))
+        return counts / (bin_dur_ms / 1000)
 
 
-def moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.Series, window_size_ms: int=100, window_hop_ms: int=50):
+def moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.Series, window_size_ms: int=250, window_hop_ms: int=10):
     """
 
     :param inhale_ts:
@@ -40,8 +40,7 @@ def moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.Series, w
     :param window_hop_ms:
     :return:
     """
-    pre_fv_ts_bins = pd.DataFrame(columns=['count', 'frequency'])
-    post_fv_ts_bins = pd.DataFrame(columns=['count', 'frequency'])
+    ts_bins = pd.DataFrame(columns=['count', 'frequency'])
 
     pre_fv_timestamps = trial_timestamps[trial_timestamps <= 0]
     post_fv_timestamps = trial_timestamps[trial_timestamps >= 0]
@@ -49,23 +48,22 @@ def moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.Series, w
     win_end = pre_fv_timestamps[-1]
     win_start = win_end - window_size_ms
 
-    while win_start >= pre_fv_timestamps[0]:
+    while win_end >= pre_fv_timestamps[0] + window_size_ms:
         num_current_bin = inhale_ts.between(win_start, win_end).sum()
         frequency = _calc_freq(num_current_bin, window_size_ms)
-        pre_fv_ts_bins.loc[win_end, 'count'] = num_current_bin
-        pre_fv_ts_bins.loc[win_end, 'frequency'] = frequency
+        ts_bins.loc[win_end, 'count'] = num_current_bin
+        ts_bins.loc[win_end, 'frequency'] = frequency
         win_end -= window_hop_ms
         win_start = win_end - window_size_ms
 
     win_start = post_fv_timestamps[0]
     win_end = win_start + window_size_ms
-
-    while win_end <= post_fv_timestamps[-1]:
+    while win_end <= (post_fv_timestamps[-1] - window_size_ms):
         num_current_bin = inhale_ts.between(win_start, win_end).sum()
         frequency = _calc_freq(num_current_bin, window_size_ms)
-        post_fv_ts_bins.loc[win_end, 'count'] = num_current_bin
-        post_fv_ts_bins.loc[win_end, 'frequency'] = frequency
+        ts_bins.loc[win_start, 'count'] = num_current_bin
+        ts_bins.loc[win_start, 'frequency'] = frequency
         win_start += window_hop_ms
         win_end = win_start + window_size_ms
 
-    print(pre_fv_ts_bins, post_fv_ts_bins)
+    return ts_bins.sort_index()
