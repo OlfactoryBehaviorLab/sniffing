@@ -1,5 +1,5 @@
-from dewan_h5_git.dewan_h5 import DewanH5
-from .helpers import preprocessing, analysis, plotting
+from dewan_h5 import DewanH5
+from .helpers import preprocessing, frequency, plotting
 
 import pandas as pd
 import numpy as np
