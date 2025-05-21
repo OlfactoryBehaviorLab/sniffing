@@ -21,7 +21,7 @@ def plot_multi_traces(traces: list[Series], trial_name) -> None:
 
 
 def plot_crossing_frequencies(trace, true_inhales, true_exhales, inhale_frequencies, exhale_frequencies,
-                               inhale_times, exhale_times, crossings, trial_number, output_dir=None):
+                               inhale_times, exhale_times, crossings, trial_number, output_dir=None, display_plots=True):
     fig, ax = plt.subplots(2, sharex=True, figsize=(10, 7))
     ax[0].title.set_text(f'Trace w/ Peaks and Crossings | Trial: {trial_number}')
     ax[1].set_ylabel('Frequency (Hz)')
@@ -46,11 +46,12 @@ def plot_crossing_frequencies(trace, true_inhales, true_exhales, inhale_frequenc
         output_path = output_dir.joinpath(f'trial_{trial_number}.pdf')
         fig.savefig(output_path, dpi=600)
         plt.close()
-    else:
+
+    if display_plots:
         plt.show()
 
 
-def plot_binned_frequencies(traces, titles, num_trials, mouse, concentration):
+def plot_binned_frequencies(traces, titles, num_trials, mouse, concentration, display_plots=True):
     colors = ['m', 'c', 'g', 'orange']
     num_traces = len(traces)
     fig,ax = plt.subplots(num_traces, 1, figsize=(10, 10), sharex=True, sharey=True)
@@ -75,6 +76,8 @@ def plot_binned_frequencies(traces, titles, num_trials, mouse, concentration):
     # fig.supylabel('Frequency (Hz)')
 
     plt.tight_layout()
-    plt.show()
+
+    if display_plots:
+        plt.show()
 
     return fig, ax
