@@ -18,6 +18,9 @@ def main():
     else:
         data_dir = Path('/mnt/r2d2/11_Data/GoodSniffData')
 
+    animal_dirs = data_dir.iterdir()
+    animal_dirs = [_dir for _dir in animal_dirs if 'Z' not in _dir.name]
+
     if args.output_dir:
         _path = Path(args.output_dir)
         if not _path.exists():
@@ -27,9 +30,11 @@ def main():
         output_dir = data_dir.joinpath('output')
 
     if not args.combined:
-        h5_files = list(data_dir.glob('*.h5'))
-        output_dir.mkdir(exist_ok=True)
-        process_files(h5_files, output_dir)
+        for animal_dir in animal_dirs:
+            h5_files = list(animal_dir.glob('*.h5'))
+            output_dir.mkdir(exist_ok=True)
+            process_files(h5_files, output_dir)
+            break
     else:
         print('Combined!')
 
