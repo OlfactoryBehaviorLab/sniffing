@@ -3,8 +3,9 @@ import pandas as pd
 from scipy import signal, fft
 import matplotlib.pyplot as plt
 
-from numba import njit
+from numba import njit, prange
 from numba import types, typed
+
 def _instantaneous_frequency(peaks):
     pairs = zip(peaks.iloc[:-1].index, peaks.iloc[1:].index)
     frequencies = []
@@ -12,7 +13,8 @@ def _instantaneous_frequency(peaks):
 
     for inhale1, inhale2 in pairs:
         delta_t = abs(inhale2 - inhale1)
-        frequency = round(1 / (delta_t / 1000), 2)
+        # frequency = round(1 / (delta_t / 1000), 2)
+        frequency = round(_calc_freq(1, delta_t), 2)
         frequencies.append(frequency)
         times.append(inhale1 + (delta_t / 2))
 
@@ -24,13 +26,6 @@ def calc_frequencies(true_inhales, true_exhales):
     exhale_frequencies, exhale_times = _instantaneous_frequency(true_exhales)
 
     return inhale_frequencies, exhale_frequencies, inhale_times, exhale_times
-
-@njit
-def _calc_freq(counts, bin_dur_ms):
-    if counts == 0:
-        return 0
-    else:
-        return counts / (bin_dur_ms / 1000)
 
 
 def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.Series, window_size_ms: int=100, window_hop_ms: int=10):
@@ -69,7 +64,16 @@ def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.S
 
     return ts_bins.sort_index()
 
+
 @njit
+def _calc_freq(counts, bin_dur_ms) -> float:
+    if counts == 0 or bin_dur_ms == 0:
+        return 0.0
+    else:
+        return counts / (bin_dur_ms / 1000)
+
+
+@njit(parallel=True)
 def oneside_moving_window_frequency(inhale_ts: np.array, trial_timestamps: np.array, window_size_ms: int=100, window_step_ms: int=10):
     """
 
@@ -88,7 +92,9 @@ def oneside_moving_window_frequency(inhale_ts: np.array, trial_timestamps: np.ar
     counts = np.zeros(window_bins.shape[0])
     frequencies = np.zeros(window_bins.shape[0])
 
-    for i, (win_start, win_end) in enumerate(window_bins):
+    for i in prange(len(window_bins)):
+        win_start, win_end = window_bins[i]
+
         num_sniffs = np.logical_and(win_end > inhale_ts, inhale_ts >= win_start).sum()
         frequency = _calc_freq(num_sniffs, window_size_ms)
         bin_centers[i] = (win_start + win_end) / 2
