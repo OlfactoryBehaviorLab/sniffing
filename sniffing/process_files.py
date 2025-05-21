@@ -15,8 +15,9 @@ BIN_SIZE = 50 # ms
 
 NAN_THRESHOLD = 20
 
-def process_files(h5_files, output_dir, plot_figs=True):
+def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, display_plots=False):
     bins = np.arange(2*PRE_FV_TIME, MAX_POST_FV_TIME, BIN_SIZE)
+
     for h5_file_path in tqdm(h5_files, total=len(h5_files), desc='Processing H5 Files:'):
         try:
             print(f'Processing {h5_file_path.name}')
@@ -43,8 +44,10 @@ def process_files(h5_files, output_dir, plot_figs=True):
 
                 for trial_number in tqdm(filtered_trace_keys, total=len(filtered_trace_keys)):
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[PRE_FV_TIME:]
-                    # raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
-                    # plotting.plot_multi_traces([raw_data, filtered_trimmed_trace])
+
+                    if plot_raw_traces:
+                        raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
+                        plotting.plot_multi_traces([raw_data, filtered_trimmed_trace], trial_number)
 
                     trial_result = h5.trial_parameters.loc[trial_number, 'result']
 
@@ -79,7 +82,6 @@ def process_files(h5_files, output_dir, plot_figs=True):
                     inhale_frequencies, exhale_frequencies, inhale_times, exhale_times = frequency.calc_frequencies(
                         true_inhales, true_exhales)
 
-
                     _columns = pd.MultiIndex.from_product([[trial_number], ['inhale_time', 'inhale_freq']],
                                                           names=['Trial', 'Data'])
                     all_trial_data = pd.DataFrame(zip(inhale_times, inhale_frequencies), columns=_columns)
@@ -95,7 +97,7 @@ def process_files(h5_files, output_dir, plot_figs=True):
                     if plot_figs:
                         plotting.plot_crossing_frequencies(filtered_trimmed_trace, inhales, exhales,
                                                            inhale_frequencies, exhale_frequencies, inhale_times,
-                                                           exhale_times, crossings, trial_number, plot_output_dir)
+                                                           exhale_times, crossings, trial_number, plot_output_dir, display_plots)
 
                 trial_types = h5.trial_parameters.loc[filtered_trial_names, 'trial_type']
                 trial_results = h5.trial_parameters.loc[filtered_trial_names, 'result']
@@ -148,7 +150,7 @@ def process_files(h5_files, output_dir, plot_figs=True):
                                 correct_rejection_ts_bins.shape[1],
                                 missed_ts_bins.shape[1]
                                 ],
-                    h5.mouse, h5.concentration
+                    h5.mouse, h5.concentration, display_plots
                 )
 
                 mean_go_trial_ts_bins.to_excel(file_output_dir.joinpath('mean_go_trial_ts_bins.xlsx'))
