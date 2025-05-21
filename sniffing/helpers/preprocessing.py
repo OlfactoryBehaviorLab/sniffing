@@ -53,8 +53,8 @@ def get_trace_features(trace: pd.Series) -> tuple[pd.Series, pd.Series, np.array
     # # We can get the exhales by inverting the trace and running the same function
     # exhalation_peak, props_2 = signal.find_peaks(trace * -1, distance=50, height=0.1)
 
-    inhale_peak, _ = signal.find_peaks(trace * -1, distance=30, width=10, prominence=.05)
-    exhalation_peak, _ = signal.find_peaks(trace, distance=30, width=10, prominence=.05)
+    exhalation_peak, _ = signal.find_peaks(trace * -1, distance=30, width=10, prominence=.05)
+    inhale_peak, _ = signal.find_peaks(trace, distance=30, width=10, prominence=.05)
 
 
     inhale_x = trace.index[inhale_peak]
@@ -67,6 +67,38 @@ def get_trace_features(trace: pd.Series) -> tuple[pd.Series, pd.Series, np.array
 
     return inhales, exhales, crossings
 
+
+def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
+
+    good_inhales = pd.DataFrame(columns=['magnitude'])
+
+    inhale_index = 0
+    run_start = 0
+    while True:
+        if inhale_index >= inhales.shape[0] - 1:  # Do while loop proxy
+            break
+
+        current_inhale = inhales.iloc[inhale_index]
+        next_inhale = inhales.iloc[inhale_index + 1]
+
+        if np.any(np.logical_and(current_inhale < exhales, exhales < next_inhale)):
+            if run_start == 0:
+                good_inhales.loc[current_inhale, 'magnitude'] = inhales.index[inhale_index]
+            else:
+                ambiguous_sniffs = inhales.iloc[run_start:inhale_index+1]
+                ambiguous_sniffs_magnitude = inhales.index[run_start:inhale_index+1]
+                print(ambiguous_sniffs_magnitude)
+                max_sniff_magnitude = np.argmax(ambiguous_sniffs_magnitude)
+                true_sniff = ambiguous_sniffs.iloc[max_sniff_magnitude]
+                good_inhales.loc[true_sniff, 'magnitude'] = ambiguous_sniffs_magnitude[max_sniff_magnitude]
+                run_start = 0
+        else:
+            if run_start == 0:
+                run_start = inhale_index
+
+        inhale_index += 1
+
+    return good_inhales
 
 
 def get_true_peaks(inhales: pd.Series, exhales: pd.Series, crossing_pairs: np.array) -> tuple[pd.DataFrame, pd.DataFrame]:
