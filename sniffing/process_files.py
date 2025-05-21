@@ -53,18 +53,20 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
 
                     inhales, exhales, crossings = preprocessing.get_trace_features(filtered_trimmed_trace)
                     crossing_pairs = np.fromiter(zip(crossings[:-1], crossings[1:]), dtype=object)
+                    #
+                    # true_inhales, true_exhales = preprocessing.get_true_peaks(inhales, exhales, crossing_pairs)
+                    #
 
-                    true_inhales, true_exhales = preprocessing.get_true_peaks(inhales, exhales, crossing_pairs)
 
-                    inhalation_durations = preprocessing.inhalation_durations(true_inhales)
-
+                    true_inhales = preprocessing.filter_sniff_peaks(inhales, exhales)
                     true_inhales_post_fv = true_inhales.loc[0:]
+                    # inhalation_durations = preprocessing.inhalation_durations(true_inhales)
 
                     if len(true_inhales_post_fv) == 0:
                         print(f'{trial_number} has no inhales after the FV!')
                         continue
 
-                    preprocessing.get_bin_counts(trial_number, true_inhales, inhale_bins)
+                    # preprocessing.get_bin_counts(trial_number, true_inhales, inhale_bins)
 
                     true_inhales_ts = pd.Series(true_inhales.index)
                     bin_centers, counts, frequencies = frequency.oneside_moving_window_frequency(true_inhales_ts.values, filtered_trimmed_trace.index.values)
@@ -79,40 +81,41 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                     elif trial_result == 5:
                         missed_ts_bins = pd.concat((missed_ts_bins, ts_bins['frequency']), axis=1)
 
-                    inhale_frequencies, exhale_frequencies, inhale_times, exhale_times = frequency.calc_frequencies(
-                        true_inhales, true_exhales)
+                    # inhale_frequencies, exhale_frequencies, inhale_times, exhale_times = frequency.calc_frequencies(
+                    #     true_inhales, true_exhales)
 
-                    _columns = pd.MultiIndex.from_product([[trial_number], ['inhale_time', 'inhale_freq']],
-                                                          names=['Trial', 'Data'])
-                    all_trial_data = pd.DataFrame(zip(inhale_times, inhale_frequencies), columns=_columns)
+                    # _columns = pd.MultiIndex.from_product([[trial_number], ['inhale_time', 'inhale_freq']],
+                    #                                       names=['Trial', 'Data'])
+                    # all_trial_data = pd.DataFrame(zip(inhale_times, inhale_frequencies), columns=_columns)
 
-                    results = pd.concat([results, all_trial_data], axis=1)
+                    # results = pd.concat([results, all_trial_data], axis=1)
 
-                    _columns = pd.MultiIndex.from_product([[trial_number], ['timestamp', 'duration']], names=['Trial', 'Inhales'])
-                    inhalation_durations.columns = _columns
-                    all_inhalation_durations = pd.concat([all_inhalation_durations, inhalation_durations], axis=1)
+                    # _columns = pd.MultiIndex.from_product([[trial_number], ['timestamp', 'duration']], names=['Trial', 'Inhales'])
+                    # inhalation_durations.columns = _columns
+                    # all_inhalation_durations = pd.concat([all_inhalation_durations, inhalation_durations], axis=1)
 
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
                     if plot_figs:
-                        plotting.plot_crossing_frequencies(filtered_trimmed_trace, inhales, exhales,
-                                                           inhale_frequencies, exhale_frequencies, inhale_times,
-                                                           exhale_times, crossings, trial_number, plot_output_dir, display_plots)
+                        # plotting.plot_crossing_frequencies(filtered_trimmed_trace, inhales, exhales,
+                        #                                    inhale_frequencies, exhale_frequencies, inhale_times,
+                        #                                    exhale_times, crossings, trial_number, plot_output_dir, display_plots)
+                        plotting.plot_true_sniffs(filtered_trimmed_trace, true_inhales, inhales, exhales, crossings, trial_number, plot_output_dir, display_plots)
 
-                trial_types = h5.trial_parameters.loc[filtered_trial_names, 'trial_type']
-                trial_results = h5.trial_parameters.loc[filtered_trial_names, 'result']
-
-                inhale_bins.insert(0, 'trial_type', trial_types)
-                inhale_bins.insert(1, 'results', trial_results)
-
-                results_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{h5.concentration}.xlsx')
-                results.to_excel(results_path)
-
-                bins_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{h5.concentration}-bins.xlsx')
-                inhale_bins.to_excel(bins_path)
-
-                inhalation_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{h5.concentration}-inhalation_durations.xlsx')
-                all_inhalation_durations.to_excel(inhalation_path)
+                # trial_types = h5.trial_parameters.loc[filtered_trial_names, 'trial_type']
+                # trial_results = h5.trial_parameters.loc[filtered_trial_names, 'result']
+                #
+                # inhale_bins.insert(0, 'trial_type', trial_types)
+                # inhale_bins.insert(1, 'results', trial_results)
+                #
+                # results_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{h5.concentration}.xlsx')
+                # results.to_excel(results_path)
+                #
+                # bins_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{h5.concentration}-bins.xlsx')
+                # inhale_bins.to_excel(bins_path)
+                #
+                # inhalation_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{h5.concentration}-inhalation_durations.xlsx')
+                # all_inhalation_durations.to_excel(inhalation_path)
 
                 go_trial_ts_bins = go_trial_ts_bins.dropna(axis=0)
                 false_alarm_ts_bins = false_alarm_ts_bins.dropna(axis=0)
@@ -164,4 +167,4 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
 
         except Exception as e:
             print(f'Error processing H5 file {h5_file_path}')
-            raise e
+            # raise e
