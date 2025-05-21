@@ -51,6 +51,27 @@ def plot_crossing_frequencies(trace, true_inhales, true_exhales, inhale_frequenc
         plt.show()
 
 
+def plot_true_sniffs(trace, true_inhales, all_inhales, all_exhales, crossings, trial_number, output_dir=None, display_plots=True):
+    fig, ax = plt.subplots(figsize=(10,3))
+    ax.title.set_text(f'Trace w/ Peaks and Crossings | Trial: {trial_number}')
+    ax.set_xlabel('Time (ms)')
+    _ = ax.plot(trace, color='c')
+    _ = ax.vlines(x=0, ymin=min(trace), ymax=max(trace), color='k')
+    _ = ax.hlines(y=np.mean(trace), xmin=trace.index[0], xmax=trace.index[-1], alpha=0.3, color='m')
+    _ = ax.scatter(crossings, np.zeros(len(crossings)), marker="o", color='g')
+    _ = ax.scatter(all_inhales, all_inhales.index, marker='x', color='r', label='inhale')
+    _ = ax.scatter(all_exhales, all_exhales.index, marker='x', color='orange', label='exhale')
+    _ = ax.scatter(true_inhales.index, true_inhales, marker='*', color='m', label='true_inhale')
+    _ = ax.legend()
+
+    if output_dir is not None:
+        output_path = output_dir.joinpath(f'trial_{trial_number}.pdf')
+        fig.savefig(output_path, dpi=600)
+        plt.close()
+
+    if display_plots:
+        plt.show()
+
 def plot_binned_frequencies(traces, titles, num_trials, mouse, concentration, display_plots=True):
     colors = ['m', 'c', 'g', 'orange']
     num_traces = len(traces)
