@@ -16,7 +16,7 @@ def main():
             raise FileNotFoundError(f"Data directory {args.data_dir} does not exist")
         data_dir = _path
     else:
-        data_dir = Path('/mnt/r2d2/11_Data/GoodSniffData')
+        data_dir = Path('/mnt/r2d2/5_Projects/Concentration_Sniffing_Dynamics/Raw_Data')
 
     animal_dirs = data_dir.iterdir()
     animal_dirs = [_dir for _dir in animal_dirs if 'Z' not in _dir.name]
@@ -27,14 +27,13 @@ def main():
             raise FileNotFoundError(f"Output directory {args.output_dir} does not exist")
         output_dir = _path
     else:
-        output_dir = data_dir.joinpath('output')
+        output_dir = data_dir.parent.joinpath('output')
+        output_dir.mkdir(exist_ok=True)
 
     if not args.combined:
         for animal_dir in animal_dirs:
             h5_files = list(animal_dir.glob('*.h5'))
-            output_dir.mkdir(exist_ok=True)
             process_files(h5_files, output_dir)
-            break
     else:
         print('Combined!')
 
