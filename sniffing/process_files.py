@@ -13,13 +13,15 @@ PRE_FV_TIME = -1000  # ms before FV
 MAX_POST_FV_TIME = 2000 # ms after FV
 BIN_SIZE = 50 # ms
 
-def process_files(h5_files, output_dir, plot_figs=False):
+NAN_THRESHOLD = 20
+
+def process_files(h5_files, output_dir, plot_figs=True):
     bins = np.arange(2*PRE_FV_TIME, MAX_POST_FV_TIME, BIN_SIZE)
     for h5_file_path in tqdm(h5_files, total=len(h5_files), desc='Processing H5 Files:'):
         try:
             print(f'Processing {h5_file_path.name}')
 
-            with DewanH5(h5_file_path) as h5:
+            with DewanH5(h5_file_path, drop_early_lick_trials=True) as h5:
                 results = pd.DataFrame()
                 all_inhalation_durations = pd.DataFrame()
 
@@ -28,7 +30,6 @@ def process_files(h5_files, output_dir, plot_figs=False):
                 correct_rejection_ts_bins = pd.DataFrame()
                 missed_ts_bins = pd.DataFrame()
 
-                # _concentration = np.format_float_scientific(h5.concentration, 1)
                 file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', h5.concentration)
                 file_output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -60,18 +61,11 @@ def process_files(h5_files, output_dir, plot_figs=False):
                         print(f'{trial_number} has no inhales after the FV!')
                         continue
 
-                    # first_true_inhale = true_inhales_post_fv.iloc[0]
-                    # first_crossing = first_true_inhale['crossing']
-
-                    # if first_crossing > 0:
-                    #     crossings = preprocessing.offset_timestamps(first_crossing, filtered_trimmed_trace,
-                    #                                                 true_inhales, true_exhales, crossings)
-
                     preprocessing.get_bin_counts(trial_number, true_inhales, inhale_bins)
 
-
                     true_inhales_ts = pd.Series(true_inhales.index)
-                    ts_bins = frequency.moving_window_frequency(true_inhales_ts, filtered_trimmed_trace.index.values)
+                    bin_centers, counts, frequencies = frequency.oneside_moving_window_frequency(true_inhales_ts.values, filtered_trimmed_trace.index.values)
+                    ts_bins = pd.DataFrame(zip(counts, frequencies), index=bin_centers, columns=['counts', 'frequency'])
 
                     if trial_result == 1:
                         go_trial_ts_bins = pd.concat((go_trial_ts_bins, ts_bins['frequency']), axis=1)
@@ -99,7 +93,7 @@ def process_files(h5_files, output_dir, plot_figs=False):
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
                     if plot_figs:
-                        plotting.plot_crossing_frequencies(filtered_trimmed_trace, true_inhales, true_exhales,
+                        plotting.plot_crossing_frequencies(filtered_trimmed_trace, inhales, exhales,
                                                            inhale_frequencies, exhale_frequencies, inhale_times,
                                                            exhale_times, crossings, trial_number, plot_output_dir)
 
@@ -118,15 +112,50 @@ def process_files(h5_files, output_dir, plot_figs=False):
                 inhalation_path = file_output_dir.joinpath(f'mouse-{h5.mouse}-{h5.concentration}-inhalation_durations.xlsx')
                 all_inhalation_durations.to_excel(inhalation_path)
 
+                go_trial_ts_bins = go_trial_ts_bins.dropna(axis=0)
+                false_alarm_ts_bins = false_alarm_ts_bins.dropna(axis=0)
+                correct_rejection_ts_bins = correct_rejection_ts_bins.dropna(axis=0)
+                missed_ts_bins = missed_ts_bins.dropna(axis=0)
+
                 mean_go_trial_ts_bins = go_trial_ts_bins.mean(axis=1)
                 mean_false_alarm_ts_bins = false_alarm_ts_bins.mean(axis=1)
                 mean_correct_rejection_ts_bins = correct_rejection_ts_bins.mean(axis=1)
                 mean_missed_ts_bins = missed_ts_bins.mean(axis=1)
 
+                # mean_go_trial_ts_bins = go_trial_ts_bins.sum(axis=1) / go_trial_ts_bins.shape[1]
+                # mean_false_alarm_ts_bins = false_alarm_ts_bins.sum(axis=1) / false_alarm_ts_bins.shape[1]
+                # mean_correct_rejection_ts_bins = correct_rejection_ts_bins.sum(axis=1) / correct_rejection_ts_bins.shape[1]
+                # mean_missed_ts_bins = missed_ts_bins.sum(axis=1) / missed_ts_bins.shape[1]
+
+
+
+                fig, axs= plotting.plot_binned_frequencies(
+                        [
+                                mean_go_trial_ts_bins,
+                                mean_false_alarm_ts_bins,
+                                mean_correct_rejection_ts_bins,
+                                mean_missed_ts_bins
+                                ],
+                        [
+                                'Mean Go Trial',
+                                'Mean False Alarm',
+                                'Mean Correct Rejection',
+                                'Mean Missed'
+                                ],
+                   [
+                                go_trial_ts_bins.shape[1],
+                                false_alarm_ts_bins.shape[1],
+                                correct_rejection_ts_bins.shape[1],
+                                missed_ts_bins.shape[1]
+                                ],
+                    h5.mouse, h5.concentration
+                )
+
                 mean_go_trial_ts_bins.to_excel(file_output_dir.joinpath('mean_go_trial_ts_bins.xlsx'))
                 mean_false_alarm_ts_bins.to_excel(file_output_dir.joinpath('mean_false_alarm_ts_bins.xlsx'))
                 mean_correct_rejection_ts_bins.to_excel(file_output_dir.joinpath('mean_correct_rejection_ts_bins.xlsx'))
                 mean_missed_ts_bins.to_excel(file_output_dir.joinpath('mean_missed_ts_bins.xlsx'))
+                fig.savefig(file_output_dir.joinpath(f'binned_frequency_hist.pdf'))
 
                 h5.export(file_output_dir)
 
