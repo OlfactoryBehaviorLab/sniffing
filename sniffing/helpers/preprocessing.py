@@ -49,9 +49,13 @@ def get_trace_features(trace: pd.Series) -> tuple[pd.Series, pd.Series, np.array
     crossings = np.where(np.diff(np.signbit(trace)))[0]
     crossings = trace.index[crossings]
 
-    inhale_peak, props = signal.find_peaks(trace, distance=25, height=0.1)
-    # We can get the exhales by inverting the trace and running the same function
-    exhalation_peak, props_2 = signal.find_peaks(trace * -1, distance=25, height=0.1)
+    # inhale_peak, props = signal.find_peaks(trace, distance=50, height=0.1)
+    # # We can get the exhales by inverting the trace and running the same function
+    # exhalation_peak, props_2 = signal.find_peaks(trace * -1, distance=50, height=0.1)
+
+    inhale_peak, _ = signal.find_peaks(trace * -1, distance=30, width=10, prominence=.05)
+    exhalation_peak, _ = signal.find_peaks(trace, distance=30, width=10, prominence=.05)
+
 
     inhale_x = trace.index[inhale_peak]
     inhale_y = trace.loc[inhale_x]
@@ -62,6 +66,7 @@ def get_trace_features(trace: pd.Series) -> tuple[pd.Series, pd.Series, np.array
     exhales = pd.Series(exhale_x, index=exhale_y)
 
     return inhales, exhales, crossings
+
 
 
 def get_true_peaks(inhales: pd.Series, exhales: pd.Series, crossing_pairs: np.array) -> tuple[pd.DataFrame, pd.DataFrame]:
