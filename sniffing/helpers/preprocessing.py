@@ -68,6 +68,15 @@ def get_trace_features(trace: pd.Series) -> tuple[pd.Series, pd.Series, np.array
     return inhales, exhales, crossings
 
 
+def _pick_true_peaks(inhales, run_start, current_index):
+    ambiguous_sniffs = inhales.iloc[run_start:current_index + 1]
+    ambiguous_sniffs_magnitude = inhales.index[run_start:current_index + 1]
+    max_sniff_magnitude = np.argmax(ambiguous_sniffs_magnitude)
+    true_sniff_timestamp = ambiguous_sniffs.iloc[max_sniff_magnitude]
+    true_sniff_magnitude = ambiguous_sniffs_magnitude[max_sniff_magnitude]
+    return true_sniff_timestamp, true_sniff_magnitude
+
+
 def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
 
     good_inhales = pd.DataFrame(columns=['magnitude'])
@@ -85,12 +94,8 @@ def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
             if run_start == 0:
                 good_inhales.loc[current_inhale, 'magnitude'] = inhales.index[inhale_index]
             else:
-                ambiguous_sniffs = inhales.iloc[run_start:inhale_index+1]
-                ambiguous_sniffs_magnitude = inhales.index[run_start:inhale_index+1]
-                print(ambiguous_sniffs_magnitude)
-                max_sniff_magnitude = np.argmax(ambiguous_sniffs_magnitude)
-                true_sniff = ambiguous_sniffs.iloc[max_sniff_magnitude]
-                good_inhales.loc[true_sniff, 'magnitude'] = ambiguous_sniffs_magnitude[max_sniff_magnitude]
+                true_sniff_timestamp, true_sniff_magnitude = _pick_true_peaks(inhales, run_start, inhale_index)
+                good_inhales.loc[true_sniff_timestamp, 'magnitude'] = true_sniff_magnitude
                 run_start = 0
         else:
             if run_start == 0:
