@@ -83,11 +83,21 @@ def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
 
     inhale_index = 0
     run_start = 0
+
+
     while True:
+        current_inhale = inhales.iloc[inhale_index]
+
         if inhale_index >= inhales.shape[0] - 1:  # Do while loop proxy
+        # If we're at the last sniff, make sure it is also recorded
+            if run_start == 0:
+                good_inhales.loc[current_inhale, 'magnitude'] = inhales.index[inhale_index]
+            else:
+                true_sniff_timestamp, true_sniff_magnitude = _pick_true_peaks(inhales, run_start, inhale_index)
+                good_inhales.loc[true_sniff_timestamp, 'magnitude'] = true_sniff_magnitude
+
             break
 
-        current_inhale = inhales.iloc[inhale_index]
         next_inhale = inhales.iloc[inhale_index + 1]
 
         if np.any(np.logical_and(current_inhale < exhales, exhales < next_inhale)):
