@@ -55,9 +55,14 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                         print(f'{trial_number} has no inhales after the FV!')
                         continue
 
-                    true_inhales_ts = pd.Series(true_inhales.index)
-                    bin_centers, counts, frequencies = frequency.oneside_moving_window_frequency(true_inhales_ts.values, filtered_trimmed_trace.index.values)
-                    ts_bins = pd.DataFrame(zip(counts, frequencies), index=bin_centers, columns=['counts', 'frequency'])
+                    _counts, _frequencies, _centers = frequency.static_window_frequency(
+                        true_inhales.values,
+                        filtered_trimmed_trace.index.values,
+                        BIN_SIZE
+                    )
+
+                    bin_counts = pd.DataFrame(_counts, index=_centers, columns=['counts'])
+                    bin_frequencies = pd.DataFrame(_frequencies, index=_centers, columns=['freq'])
 
                     if trial_result == 1:
                         go_trial_ts_bins = pd.concat((go_trial_ts_bins, ts_bins['frequency']), axis=1)
