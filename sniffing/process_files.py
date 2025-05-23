@@ -65,8 +65,8 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                         BIN_SIZE
                     )
 
-                    bin_counts = pd.DataFrame(_counts, index=_centers, columns=['counts'])
-                    bin_frequencies = pd.DataFrame(_frequencies, index=_centers, columns=['freq'])
+                    bin_counts = pd.DataFrame(_counts, index=_centers, columns=[str(trial_number)])
+                    bin_frequencies = pd.DataFrame(_frequencies, index=_centers, columns=[str(trial_number)])
 
                     if trial_result == 1:
                         go_trial_counts = pd.concat((go_trial_counts, bin_counts), axis=1)
@@ -109,28 +109,27 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                 mean_correct_rejection_freq = correct_rejection_freq.mean(axis=1)
                 mean_missed_freq = missed_freq.mean(axis=1)
 
-                if False:
-                    fig, axs= plotting.plot_binned_frequencies(
-                            [
-                                    mean_go_trial_counts,
-                                    mean_false_alarm_counts,
-                                    mean_correct_rejection_counts,
-                                    mean_missed_counts
-                                    ],
-                            [
-                                    'Mean Go Trial',
-                                    'Mean False Alarm',
-                                    'Mean Correct Rejection',
-                                    'Mean Missed'
-                                    ],
-                       [
-                                    go_trial_counts.shape[1],
-                                    false_alarm_counts.shape[1],
-                                    correct_rejection_counts.shape[1],
-                                    missed_counts.shape[1]
-                                    ],
-                        h5.mouse, h5.concentration, display_plots
-                    )
+            #     fig, axs= plotting.plot_binned_frequencies(
+            #             [
+            #                     mean_go_trial_counts,
+            #                     mean_false_alarm_counts,
+            #                     mean_correct_rejection_counts,
+            #                     mean_missed_counts
+            #                     ],
+            #             [
+            #                     'Mean Go Trial',
+            #                     'Mean False Alarm',
+            #                     'Mean Correct Rejection',
+            #                     'Mean Missed'
+            #                     ],
+            #        [
+            #                     go_trial_counts.shape[1],
+            #                     false_alarm_counts.shape[1],
+            #                     correct_rejection_counts.shape[1],
+            #                     missed_counts.shape[1]
+            #                     ],
+            #         h5.mouse, h5.concentration, display_plots
+            #     )
 
                 go_trial_counts.to_excel(file_output_dir.joinpath('go_trial_counts.xlsx'))
                 false_alarm_counts.to_excel(file_output_dir.joinpath('false_alarm_counts.xlsx'))
