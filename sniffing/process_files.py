@@ -27,6 +27,10 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                 false_alarm_counts = pd.DataFrame()
                 correct_rejection_counts = pd.DataFrame()
                 missed_counts = pd.DataFrame()
+                go_trial_freq = pd.DataFrame()
+                false_alarm_freq = pd.DataFrame()
+                correct_rejection_freq = pd.DataFrame()
+                missed_freq = pd.DataFrame()
 
                 file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', h5.concentration)
                 file_output_dir.mkdir(exist_ok=True, parents=True)
@@ -66,12 +70,16 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
 
                     if trial_result == 1:
                         go_trial_counts = pd.concat((go_trial_counts, bin_counts), axis=1)
+                        go_trial_freq = pd.concat((go_trial_freq, bin_frequencies), axis=1)
                     elif trial_result == 2:
                         correct_rejection_counts = pd.concat((correct_rejection_counts, bin_counts), axis=1)
+                        correct_rejection_freq = pd.concat((correct_rejection_freq, bin_frequencies), axis=1)
                     elif trial_result == 3:
                         false_alarm_counts = pd.concat((false_alarm_counts, bin_counts), axis=1)
+                        false_alarm_freq = pd.concat((false_alarm_freq, bin_frequencies), axis=1)
                     elif trial_result == 5:
                         missed_counts = pd.concat((missed_counts, bin_counts), axis=1)
+                        missed_freq = pd.concat((missed_freq, bin_frequencies), axis=1)
 
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
@@ -81,49 +89,59 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                         #                                    exhale_times, crossings, trial_number, plot_output_dir, display_plots)
                         plotting.plot_true_sniffs(filtered_trimmed_trace, true_inhales, inhales, exhales, crossings, trial_number, plot_output_dir, display_plots)
 
+                go_trial_counts = go_trial_counts.fillna(0)
+                false_alarm_counts = false_alarm_counts.fillna(0)
+                correct_rejection_counts = correct_rejection_counts.fillna(0)
+                missed_counts = missed_counts.fillna(0)
 
-                go_trial_counts = go_trial_counts.dropna(axis=0)
-                false_alarm_counts = false_alarm_counts.dropna(axis=0)
-                correct_rejection_counts = correct_rejection_counts.dropna(axis=0)
-                missed_counts = missed_counts.dropna(axis=0)
+                mean_go_trial_counts = go_trial_counts.mean(axis=1)
+                mean_false_alarm_counts = false_alarm_counts.mean(axis=1)
+                mean_correct_rejection_counts = correct_rejection_counts.mean(axis=1)
+                mean_missed_counts = missed_counts.mean(axis=1)
 
-                mean_go_trial_ts_bins = go_trial_counts.mean(axis=1)
-                mean_false_alarm_ts_bins = false_alarm_counts.mean(axis=1)
-                mean_correct_rejection_ts_bins = correct_rejection_counts.mean(axis=1)
-                mean_missed_ts_bins = missed_counts.mean(axis=1)
+                go_trial_freq = go_trial_freq.fillna(0)
+                false_alarm_freq = false_alarm_freq.fillna(0)
+                correct_rejection_freq = correct_rejection_freq.fillna(0)
+                missed_freq = missed_freq.fillna(0)
 
+                mean_go_trial_freq = go_trial_freq.mean(axis=1)
+                mean_false_alarm_freq = false_alarm_freq.mean(axis=1)
+                mean_correct_rejection_freq = correct_rejection_freq.mean(axis=1)
+                mean_missed_freq = missed_freq.mean(axis=1)
 
-                fig, axs= plotting.plot_binned_frequencies(
-                        [
-                                mean_go_trial_ts_bins,
-                                mean_false_alarm_ts_bins,
-                                mean_correct_rejection_ts_bins,
-                                mean_missed_ts_bins
-                                ],
-                        [
-                                'Mean Go Trial',
-                                'Mean False Alarm',
-                                'Mean Correct Rejection',
-                                'Mean Missed'
-                                ],
-                   [
-                                go_trial_counts.shape[1],
-                                false_alarm_counts.shape[1],
-                                correct_rejection_counts.shape[1],
-                                missed_counts.shape[1]
-                                ],
-                    h5.mouse, h5.concentration, display_plots
-                )
+                if False:
+                    fig, axs= plotting.plot_binned_frequencies(
+                            [
+                                    mean_go_trial_counts,
+                                    mean_false_alarm_counts,
+                                    mean_correct_rejection_counts,
+                                    mean_missed_counts
+                                    ],
+                            [
+                                    'Mean Go Trial',
+                                    'Mean False Alarm',
+                                    'Mean Correct Rejection',
+                                    'Mean Missed'
+                                    ],
+                       [
+                                    go_trial_counts.shape[1],
+                                    false_alarm_counts.shape[1],
+                                    correct_rejection_counts.shape[1],
+                                    missed_counts.shape[1]
+                                    ],
+                        h5.mouse, h5.concentration, display_plots
+                    )
 
-                mean_go_trial_ts_bins.to_excel(file_output_dir.joinpath('mean_go_trial_ts_bins.xlsx'))
-                mean_false_alarm_ts_bins.to_excel(file_output_dir.joinpath('mean_false_alarm_ts_bins.xlsx'))
-                mean_correct_rejection_ts_bins.to_excel(file_output_dir.joinpath('mean_correct_rejection_ts_bins.xlsx'))
-                mean_missed_ts_bins.to_excel(file_output_dir.joinpath('mean_missed_ts_bins.xlsx'))
-                fig.savefig(file_output_dir.joinpath(f'binned_frequency_hist.pdf'))
+                go_trial_counts.to_excel(file_output_dir.joinpath('go_trial_counts.xlsx'))
+                false_alarm_counts.to_excel(file_output_dir.joinpath('false_alarm_counts.xlsx'))
+                correct_rejection_counts.to_excel(file_output_dir.joinpath('correct_rejection_counts.xlsx'))
+                missed_counts.to_excel(file_output_dir.joinpath('missed_counts.xlsx'))
+                #fig.savefig(file_output_dir.joinpath(f'binned_frequency_hist.pdf'))
 
                 h5.export(file_output_dir)
 
 
         except Exception as e:
+            import traceback
             print(f'Error processing H5 file {h5_file_path}')
-            # raise e
+            print(traceback.format_exc())
