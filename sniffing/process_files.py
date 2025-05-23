@@ -16,8 +16,6 @@ BIN_SIZE = 50 # ms
 NAN_THRESHOLD = 20
 
 def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, display_plots=False):
-    bins = np.arange(2*PRE_FV_TIME, MAX_POST_FV_TIME, BIN_SIZE)
-
     for h5_file_path in tqdm(h5_files, total=len(h5_files), desc='Processing H5 Files:'):
         try:
             print(f'Processing {h5_file_path.name}')
@@ -51,7 +49,6 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                     trial_result = h5.trial_parameters.loc[trial_number, 'result']
 
                     inhales, exhales, crossings = preprocessing.get_trace_features(filtered_trimmed_trace)
-                    crossing_pairs = np.fromiter(zip(crossings[:-1], crossings[1:]), dtype=object)
 
                     true_inhales = preprocessing.filter_sniff_peaks(inhales, exhales)
                     true_inhales_post_fv = true_inhales.loc[0:]
@@ -84,9 +81,6 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
                     if plot_figs:
-                        # plotting.plot_crossing_frequencies(filtered_trimmed_trace, inhales, exhales,
-                        #                                    inhale_frequencies, exhale_frequencies, inhale_times,
-                        #                                    exhale_times, crossings, trial_number, plot_output_dir, display_plots)
                         plotting.plot_true_sniffs(filtered_trimmed_trace, true_inhales, inhales, exhales, crossings, trial_number, plot_output_dir, display_plots)
 
                 go_trial_counts = go_trial_counts.fillna(0)
