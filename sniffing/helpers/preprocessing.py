@@ -53,8 +53,8 @@ def get_trace_features(trace: pd.Series) -> tuple[pd.Series, pd.Series, np.array
     # # We can get the exhales by inverting the trace and running the same function
     # exhalation_peak, props_2 = signal.find_peaks(trace * -1, distance=50, height=0.1)
 
-    exhalation_peak, _ = signal.find_peaks(trace * -1, distance=30, width=10, prominence=.05)
-    inhale_peak, _ = signal.find_peaks(trace, distance=30, width=10, prominence=.05)
+    exhalation_peak, _ = signal.find_peaks(trace * -1, distance=30, width=10, prominence=.1)
+    inhale_peak, _ = signal.find_peaks(trace, distance=30, width=10, prominence=.1)
 
 
     inhale_x = trace.index[inhale_peak]
