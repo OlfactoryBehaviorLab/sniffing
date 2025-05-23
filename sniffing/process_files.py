@@ -41,7 +41,7 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
 
                 filtered_trace_keys = list(filtered_traces.keys())
 
-                for trial_number in tqdm(filtered_trace_keys, total=len(filtered_trace_keys)):
+                for trial_number in tqdm(filtered_trace_keys, total=len(filtered_trace_keys), leave=True, position=0):
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[PRE_FV_TIME:]
 
                     if plot_raw_traces:
@@ -60,7 +60,7 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                         continue
 
                     _counts, _frequencies, _centers = frequency.static_window_frequency(
-                        true_inhales.values,
+                        true_inhales.index.values,
                         filtered_trimmed_trace.index.values,
                         BIN_SIZE
                     )
