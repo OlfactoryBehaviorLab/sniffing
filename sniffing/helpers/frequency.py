@@ -102,3 +102,19 @@ def oneside_moving_window_frequency(inhale_ts: np.array, trial_timestamps: np.ar
         frequencies[i] = frequency
 
     return bin_centers, counts, frequencies
+
+
+@njit(parallel=True)
+def static_window_frequency(inhale_ts: np.array, trial_timestamps: np.array, window_size_ms: int=100) -> pd.DataFrame:
+    bin_starts = np.arange(trial_timestamps[0], trial_timestamps[-1], window_size_ms)
+    bins = list(zip(bin_starts[:-1], bin_starts[1:]))
+
+    bin_counts = pd.DataFrame(columns=['count'])
+
+    for i in prange(len(bins)):
+        bin_start, bin_end = bins[i]
+        bin_center = (bin_start - bin_end) / 2
+        num_sniffs = np.logical_and(inhale_ts >= bin_start, inhale_ts < bin_end).sum()
+        bin_counts.loc[bin_center, 'count'] = num_sniffs
+
+    return bin_counts
