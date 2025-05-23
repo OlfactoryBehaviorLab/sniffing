@@ -23,10 +23,10 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
             print(f'Processing {h5_file_path.name}')
 
             with DewanH5(h5_file_path, drop_early_lick_trials=True) as h5:
-                go_trial_ts_bins = pd.DataFrame()
-                false_alarm_ts_bins = pd.DataFrame()
-                correct_rejection_ts_bins = pd.DataFrame()
-                missed_ts_bins = pd.DataFrame()
+                go_trial_counts = pd.DataFrame()
+                false_alarm_counts = pd.DataFrame()
+                correct_rejection_counts = pd.DataFrame()
+                missed_counts = pd.DataFrame()
 
                 file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', h5.concentration)
                 file_output_dir.mkdir(exist_ok=True, parents=True)
@@ -65,13 +65,13 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                     bin_frequencies = pd.DataFrame(_frequencies, index=_centers, columns=['freq'])
 
                     if trial_result == 1:
-                        go_trial_ts_bins = pd.concat((go_trial_ts_bins, ts_bins['frequency']), axis=1)
+                        go_trial_counts = pd.concat((go_trial_counts, bin_counts), axis=1)
                     elif trial_result == 2:
-                        correct_rejection_ts_bins = pd.concat((correct_rejection_ts_bins, ts_bins['frequency']), axis=1)
+                        correct_rejection_counts = pd.concat((correct_rejection_counts, bin_counts), axis=1)
                     elif trial_result == 3:
-                        false_alarm_ts_bins = pd.concat((false_alarm_ts_bins, ts_bins['frequency']), axis=1)
+                        false_alarm_counts = pd.concat((false_alarm_counts, bin_counts), axis=1)
                     elif trial_result == 5:
-                        missed_ts_bins = pd.concat((missed_ts_bins, ts_bins['frequency']), axis=1)
+                        missed_counts = pd.concat((missed_counts, bin_counts), axis=1)
 
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
@@ -82,15 +82,15 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                         plotting.plot_true_sniffs(filtered_trimmed_trace, true_inhales, inhales, exhales, crossings, trial_number, plot_output_dir, display_plots)
 
 
-                go_trial_ts_bins = go_trial_ts_bins.dropna(axis=0)
-                false_alarm_ts_bins = false_alarm_ts_bins.dropna(axis=0)
-                correct_rejection_ts_bins = correct_rejection_ts_bins.dropna(axis=0)
-                missed_ts_bins = missed_ts_bins.dropna(axis=0)
+                go_trial_counts = go_trial_counts.dropna(axis=0)
+                false_alarm_counts = false_alarm_counts.dropna(axis=0)
+                correct_rejection_counts = correct_rejection_counts.dropna(axis=0)
+                missed_counts = missed_counts.dropna(axis=0)
 
-                mean_go_trial_ts_bins = go_trial_ts_bins.mean(axis=1)
-                mean_false_alarm_ts_bins = false_alarm_ts_bins.mean(axis=1)
-                mean_correct_rejection_ts_bins = correct_rejection_ts_bins.mean(axis=1)
-                mean_missed_ts_bins = missed_ts_bins.mean(axis=1)
+                mean_go_trial_ts_bins = go_trial_counts.mean(axis=1)
+                mean_false_alarm_ts_bins = false_alarm_counts.mean(axis=1)
+                mean_correct_rejection_ts_bins = correct_rejection_counts.mean(axis=1)
+                mean_missed_ts_bins = missed_counts.mean(axis=1)
 
 
                 fig, axs= plotting.plot_binned_frequencies(
@@ -107,10 +107,10 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                                 'Mean Missed'
                                 ],
                    [
-                                go_trial_ts_bins.shape[1],
-                                false_alarm_ts_bins.shape[1],
-                                correct_rejection_ts_bins.shape[1],
-                                missed_ts_bins.shape[1]
+                                go_trial_counts.shape[1],
+                                false_alarm_counts.shape[1],
+                                correct_rejection_counts.shape[1],
+                                missed_counts.shape[1]
                                 ],
                     h5.mouse, h5.concentration, display_plots
                 )
