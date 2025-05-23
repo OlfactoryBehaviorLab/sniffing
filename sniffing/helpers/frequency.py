@@ -110,12 +110,13 @@ def static_window_frequency(inhale_ts: np.array, trial_timestamps: np.array, win
     bins = list(zip(bin_starts[:-1], bin_starts[1:]))
 
     bin_counts = np.zeros(len(bins))
-    bin_freq = np.zeros(len(bins))
-    bin_centers = np.zeros(len(bins))
+    bin_freq = np.copy(bin_counts)
+    bin_centers = np.copy(bin_counts)
 
     for i in prange(len(bins)):
         bin_start, bin_end = bins[i]
-        bin_center = (bin_start - bin_end) / 2
+        bin_center = bin_start + window_size_ms / 2
+
         num_sniffs = np.logical_and(inhale_ts >= bin_start, inhale_ts < bin_end).sum()
         bin_counts[i] = num_sniffs
         bin_freq[i] = _calc_freq(num_sniffs, window_size_ms)
