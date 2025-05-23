@@ -67,10 +67,10 @@ def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.S
 
 @njit
 def _calc_freq(counts, bin_dur_ms) -> float:
-    if counts == 0 or bin_dur_ms == 0:
-        return 0.0
-    else:
+    try:
         return counts / (bin_dur_ms / 1000)
+    except ZeroDivisionError:
+        return 0.0
 
 
 @njit(parallel=True)
