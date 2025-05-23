@@ -69,7 +69,7 @@ def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.S
 def _calc_freq(counts, bin_dur_ms) -> float:
     try:
         return counts / (bin_dur_ms / 1000)
-    except ZeroDivisionError:
+    except Exception:
         return 0.0
 
 
