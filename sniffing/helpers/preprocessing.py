@@ -120,25 +120,33 @@ def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
 
 
 def get_flanking_exhales(true_inhales: pd.Series, exhales: pd.Series):
-    flanking_exhales = pd.DataFrame(index=true_inhales, columns=['pre', 'post'])
+    flanking_exhales = pd.DataFrame(index=true_inhales, columns=['pre', 'post', 'pre_mag', 'post_mag'])
+
+    exhale_timestamps = exhales.values
+    exhale_magnitudes = exhales.index
 
     for inhale in true_inhales:
-        print(inhale)
-        next_exhales = inhale < exhales
-        previous_exhales = exhales < inhale
+        next_exhales = inhale < exhale_timestamps
+        previous_exhales = exhale_timestamps < inhale
 
         if np.any(next_exhales):
-            next_exhale = exhales[next_exhales][0]
+            next_exhale = exhale_timestamps[next_exhales][0]
+            next_exhale_mag = exhale_magnitudes[next_exhales][0]
         else:
             next_exhale = np.inf
+            next_exhale_mag = np.inf
 
         if np.any(previous_exhales):
-            previous_exhale = exhales[previous_exhales][-1]
+            previous_exhale = exhale_timestamps[previous_exhales][-1]
+            previous_exhale_mag = exhale_magnitudes[previous_exhales][-1]
         else:
             previous_exhale = -np.inf
+            previous_exhale_mag = -np.inf
 
         flanking_exhales.loc[inhale, 'pre'] = previous_exhale
         flanking_exhales.loc[inhale, 'post'] = next_exhale
+        flanking_exhales.loc[inhale, 'pre_mag'] = previous_exhale_mag
+        flanking_exhales.loc[inhale, 'post_mag'] = next_exhale_mag
 
     return flanking_exhales
 
