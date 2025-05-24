@@ -101,7 +101,7 @@ def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
 
         # Hi future Austin, this works by seeing if the first exhale after the current inhale, and the
         # first exhale before the next inhale are the same (using bitwise AND). If they are, the two inhales
-        # must be separated by an exhale. 
+        # must be separated by an exhale.
 
         if np.any(np.logical_and(current_inhale < exhales, exhales < next_inhale)):
             if run_start == 0:
@@ -143,81 +143,6 @@ def get_flanking_exhales(true_inhales: pd.Series, exhales: pd.Series):
     return flanking_exhales
 
 
-def get_true_peaks(inhales: pd.Series, exhales: pd.Series, crossing_pairs: np.array) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-
-    :param inhales:
-    :param exhales:
-    :param crossing_pairs:
-    :return:
-    """
-    true_inhales_x = []
-    true_inhales_y = []
-    true_exhales_x = []
-    true_exhales_y = []
-
-    inhales_prev_cross = []
-    inhales_next_cross = []
-    exhales_prev_cross = []
-    exhales_next_cross = []
-    for first_cross, second_cross in crossing_pairs:
-
-        inhale_peaks_mask = inhales.between(first_cross, second_cross)
-        exhale_peaks_mask = exhales.between(first_cross, second_cross)
-
-        inhale_peaks = inhales.loc[inhale_peaks_mask]
-        exhale_peaks = exhales.loc[exhale_peaks_mask]
-
-        possible_inhale = None
-        possible_exhale = None
-
-        if inhale_peaks.shape[0] == 1:
-            possible_inhale = inhale_peaks
-        elif inhale_peaks.shape[0] > 1:
-            max_val = inhale_peaks.index.max()
-            max_inhale_peak = inhale_peaks.loc[max_val]
-            possible_inhale = pd.Series(max_inhale_peak, index=[max_val])
-
-        if exhale_peaks.shape[0] == 1:
-            possible_exhale = exhale_peaks
-        elif exhale_peaks.shape[0] > 1:
-            max_val = exhale_peaks.index.min()
-            max_exhale_peak = exhale_peaks.loc[max_val]
-            possible_exhale = pd.Series(max_exhale_peak, index=[max_val])
-
-        if possible_inhale is None and possible_exhale is None:
-            continue
-        elif possible_inhale is None:
-            inhale = False
-        elif possible_exhale is None:
-            inhale = True
-        elif abs(possible_exhale.index) > possible_inhale.index:
-            inhale = False
-        else:
-            inhale = True
-
-        if inhale:
-            true_inhales_x.extend(possible_inhale.values)
-            true_inhales_y.extend(possible_inhale.index.values)
-            inhales_prev_cross.extend([first_cross])
-            inhales_next_cross.extend([second_cross])
-        else:
-            true_exhales_x.extend(possible_exhale.values)
-            true_exhales_y.extend(possible_exhale.index.values)
-            exhales_prev_cross.extend([first_cross])
-            exhales_next_cross.extend([second_cross])
-
-    true_inhales = pd.DataFrame(
-        {'magnitude': true_inhales_y, 'inhale_start': inhales_prev_cross, 'inhale_end': inhales_next_cross},
-        index=true_inhales_x
-    )
-    true_exhales = pd.DataFrame(
-        {'magnitude': true_exhales_y, 'exhale_start': exhales_prev_cross, 'exhale_end' :exhales_next_cross},
-        index=true_exhales_x)
-
-    return true_inhales, true_exhales
-
-
 def offset_timestamps(offset, trace, true_inhales, true_exhales, crossings):
     true_inhales.index = true_inhales.index - offset
     true_exhales.index = true_exhales.index - offset
@@ -226,13 +151,6 @@ def offset_timestamps(offset, trace, true_inhales, true_exhales, crossings):
     trace.index = trace.index - offset
     # Everything else is a dataframe that is directly edited, crossings has to be returned
     return crossings - offset
-
-
-def get_bin_counts(trial_number, true_inhales, inhale_bins_df):
-    for inhale in true_inhales.index:
-        inhale_bin_index = np.where(inhale >= inhale_bins_df.columns)[0][-1]
-        inhale_bin = inhale_bins_df.columns[inhale_bin_index]
-        inhale_bins_df.loc[trial_number, inhale_bin] += 1
 
 
 def inhalation_durations(true_inhales: pd.DataFrame):
