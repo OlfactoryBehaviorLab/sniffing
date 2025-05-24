@@ -11,7 +11,8 @@ LOWER_FILTER_BAND = 0.01  # Lower Frequency (Hz)
 UPPER_FILTER_BAND = 100  # Upper Frequency (Hz)
 PRE_FV_TIME = -1000  # ms before FV
 MAX_POST_FV_TIME = 2000 # ms after FV
-BIN_SIZE = 50 # ms
+BIN_SIZE = 100 # ms
+BIN_STEPS = 50 # ms
 
 NAN_THRESHOLD = 20
 
