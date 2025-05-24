@@ -103,20 +103,26 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                 correct_rejection_counts = correct_rejection_counts.fillna(0)
                 missed_counts = missed_counts.fillna(0)
 
-                mean_go_trial_counts = go_trial_counts.mean(axis=1)
-                mean_false_alarm_counts = false_alarm_counts.mean(axis=1)
-                mean_correct_rejection_counts = correct_rejection_counts.mean(axis=1)
-                mean_missed_counts = missed_counts.mean(axis=1)
+                go_trial_counts['sum'] = go_trial_counts.sum(axis=1)
+                false_alarm_counts['sum'] = false_alarm_counts.sum(axis=1)
+                correct_rejection_counts['sum'] = correct_rejection_counts.sum(axis=1)
+                missed_counts['sum'] = missed_counts.sum(axis=1)
+
+                # Calculate mean excluding the sum column we just added
+                go_trial_counts['mean'] = go_trial_counts[go_trial_counts.columns[:-1]].mean(axis=1)
+                false_alarm_counts['mean'] = false_alarm_counts[false_alarm_counts.columns[:-1]].mean(axis=1)
+                correct_rejection_counts['mean'] = correct_rejection_counts[correct_rejection_counts.columns[:-1]].mean(axis=1)
+                missed_counts['mean'] = missed_counts[missed_counts.columns[:-1]].mean(axis=1)
 
                 go_trial_freq = go_trial_freq.fillna(0)
                 false_alarm_freq = false_alarm_freq.fillna(0)
                 correct_rejection_freq = correct_rejection_freq.fillna(0)
                 missed_freq = missed_freq.fillna(0)
 
-                mean_go_trial_freq = go_trial_freq.mean(axis=1)
-                mean_false_alarm_freq = false_alarm_freq.mean(axis=1)
-                mean_correct_rejection_freq = correct_rejection_freq.mean(axis=1)
-                mean_missed_freq = missed_freq.mean(axis=1)
+                go_trial_freq['mean'] = go_trial_freq.mean(axis=1)
+                false_alarm_freq['mean'] = false_alarm_freq.mean(axis=1)
+                correct_rejection_freq['mean'] = correct_rejection_freq.mean(axis=1)
+                missed_freq['mean'] = missed_freq.mean(axis=1)
 
             #     fig, axs= plotting.plot_binned_frequencies(
             #             [
