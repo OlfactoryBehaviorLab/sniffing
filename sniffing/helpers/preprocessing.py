@@ -161,13 +161,35 @@ def offset_timestamps(offset, trace, true_inhales, true_exhales, crossings):
     return crossings - offset
 
 
-def inhalation_durations(true_inhales: pd.DataFrame):
-    durations = []
-    for name, inhale in true_inhales.iterrows():
-        _duration = inhale['inhale_end'] - inhale['inhale_start']
-        durations.append(_duration)
+def inhalation_durations(true_inhales: pd.DataFrame, flanking_exhales: pd.DataFrame, sniff_trace):
 
-    return pd.DataFrame(zip(true_inhales.index, durations), columns=['timestamp', 'duration'])
+    inhalation_durations = pd.DataFrame(index=true_inhales.index, columns=['duration', 'left_ts', 'right_ts'])
+
+    for inhale, inhale_mag in true_inhales.iterrows():
+        inhale_mag = inhale_mag.values
+        pre_exhale_ts, post_exhale_ts, pre_exhale_mag, post_exhale_mag = flanking_exhales.loc[inhale].values
+
+        # Sometimes we can't calculate the duration of the first/last sniff
+        if np.isinf(pre_exhale_ts) or np.isinf(post_exhale_ts):
+            inhalation_durations.loc[inhale] = np.nan
+            continue
+
+        # Instead of taking the midpoint time, lets get the middle of the magnitude incase it isn't linear
+        left_sniff_trace_subset = sniff_trace.loc[pre_exhale_ts:inhale]
+        right_sniff_trace_subset = sniff_trace.loc[inhale:post_exhale_ts]
+        left_midpoint = (inhale_mag + pre_exhale_mag) / 2
+        right_midpoint = (inhale_mag + post_exhale_mag) / 2
+
+        left_timestamp = left_sniff_trace_subset.index[left_midpoint <= left_sniff_trace_subset.values][-1]
+        right_timestamp = right_sniff_trace_subset.index[right_midpoint >= right_sniff_trace_subset.values][-1]
+
+        duration = right_timestamp - left_timestamp
+
+        inhalation_durations.loc[inhale, 'duration'] = duration
+        inhalation_durations.loc[inhale, 'left_ts'] = left_timestamp
+        inhalation_durations.loc[inhale, 'right_ts'] = right_timestamp
+
+    return inhalation_durations
 
 
 
