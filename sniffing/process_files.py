@@ -30,6 +30,8 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                 correct_rejection_freq = pd.DataFrame()
                 missed_freq = pd.DataFrame()
 
+                inhalation_durations = pd.DataFrame()
+
                 file_output_dir = output_dir.joinpath(f'mouse-{h5.mouse}', h5.concentration)
                 file_output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -51,6 +53,19 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                     inhales, exhales, crossings = preprocessing.get_trace_features(filtered_trimmed_trace)
 
                     true_inhales = preprocessing.filter_sniff_peaks(inhales, exhales)
+                    flanking_exhales = preprocessing.get_flanking_exhales(true_inhales.index, exhales)
+
+                    trial_inhalation_duration = preprocessing.inhalation_durations(true_inhales, flanking_exhales, filtered_trimmed_trace)
+                    trial_inhalation_duration = trial_inhalation_duration.reset_index(names='timestamps')
+
+                    new_columns = pd.MultiIndex.from_product([[str(trial_number)], trial_inhalation_duration.columns.values], names=['Trial', 'Data'])
+                    trial_inhalation_duration.columns = new_columns
+                    trial_inhalation_duration = trial_inhalation_duration.infer_objects().fillna('X')
+
+                    inhalation_durations = pd.concat(
+                        (inhalation_durations, trial_inhalation_duration), axis=1
+                    )
+
                     true_inhales_post_fv = true_inhales.loc[0:]
                     if len(true_inhales_post_fv) == 0:
                         print(f'{trial_number} has no inhales after the FV!')
@@ -129,6 +144,7 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                 false_alarm_counts.to_excel(file_output_dir.joinpath('false_alarm_counts.xlsx'))
                 correct_rejection_counts.to_excel(file_output_dir.joinpath('correct_rejection_counts.xlsx'))
                 missed_counts.to_excel(file_output_dir.joinpath('missed_counts.xlsx'))
+                inhalation_durations.to_excel(file_output_dir.joinpath('inhalation_durations.xlsx'))
                 #fig.savefig(file_output_dir.joinpath(f'binned_frequency_hist.pdf'))
 
                 h5.export(file_output_dir)
