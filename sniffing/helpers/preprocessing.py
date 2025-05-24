@@ -84,7 +84,6 @@ def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
     inhale_index = 0
     run_start = 0
 
-
     while True:
         current_inhale = inhales.iloc[inhale_index]
 
@@ -99,6 +98,10 @@ def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
             break
 
         next_inhale = inhales.iloc[inhale_index + 1]
+
+        # Hi future Austin, this works by seeing if the first exhale after the current inhale, and the
+        # first exhale before the next inhale are the same (using bitwise AND). If they are, the two inhales
+        # must be separated by an exhale. 
 
         if np.any(np.logical_and(current_inhale < exhales, exhales < next_inhale)):
             if run_start == 0:
