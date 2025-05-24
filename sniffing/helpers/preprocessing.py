@@ -116,6 +116,30 @@ def filter_sniff_peaks(inhales: pd.Series, exhales: pd.Series):
     return good_inhales
 
 
+def get_flanking_exhales(true_inhales: pd.Series, exhales: pd.Series):
+    flanking_exhales = pd.DataFrame(index=true_inhales, columns=['pre', 'post'])
+
+    for inhale in true_inhales:
+        print(inhale)
+        next_exhales = inhale < exhales
+        previous_exhales = exhales < inhale
+
+        if np.any(next_exhales):
+            next_exhale = exhales[next_exhales][0]
+        else:
+            next_exhale = np.inf
+
+        if np.any(previous_exhales):
+            previous_exhale = exhales[previous_exhales][-1]
+        else:
+            previous_exhale = -np.inf
+
+        flanking_exhales.loc[inhale, 'pre'] = previous_exhale
+        flanking_exhales.loc[inhale, 'post'] = next_exhale
+
+    return flanking_exhales
+
+
 def get_true_peaks(inhales: pd.Series, exhales: pd.Series, crossing_pairs: np.array) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
 
