@@ -56,7 +56,7 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                     true_inhales = preprocessing.filter_sniff_peaks(inhales, exhales)
                     flanking_exhales = preprocessing.get_flanking_exhales(true_inhales.index, exhales)
 
-                    trial_inhalation_duration = preprocessing.inhalation_durations(true_inhales, flanking_exhales, filtered_trimmed_trace)
+                    trial_inhalation_duration = preprocessing.get_inhalation_durations(true_inhales, flanking_exhales, filtered_trimmed_trace)
                     trial_inhalation_duration = trial_inhalation_duration.reset_index(names='timestamps')
 
                     new_columns = pd.MultiIndex.from_product([[str(trial_number)], trial_inhalation_duration.columns.values], names=['Trial', 'Data'])

@@ -161,7 +161,7 @@ def offset_timestamps(offset, trace, true_inhales, true_exhales, crossings):
     return crossings - offset
 
 
-def inhalation_durations(true_inhales: pd.DataFrame, flanking_exhales: pd.DataFrame, sniff_trace):
+def get_inhalation_durations(true_inhales: pd.DataFrame, flanking_exhales: pd.DataFrame, sniff_trace):
 
     inhalation_durations = pd.DataFrame(index=true_inhales.index, columns=['duration', 'left_ts', 'right_ts'])
 
