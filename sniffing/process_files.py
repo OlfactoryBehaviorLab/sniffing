@@ -17,7 +17,9 @@ BIN_STEPS = 50 # ms
 
 NAN_THRESHOLD = 20
 
-def process_files(h5_files, output_dir, filtered_manual_curation=True, plot_raw_traces=False, plot_figs=False, display_plots=False):
+def process_files(h5_files, output_dir, run_manual_curation=False, filtered_manual_curation=True,
+                  plot_figs=True, display_plots=False, ignore_errors=True):
+
     for h5_file_path in tqdm(h5_files, total=len(h5_files), desc='Processing H5 Files:'):
         try:
             print(f'Processing {h5_file_path.name}')
@@ -107,7 +109,7 @@ def process_files(h5_files, output_dir, filtered_manual_curation=True, plot_raw_
                     plot_output_dir = file_output_dir.joinpath('figures')
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
                     if plot_figs:
-                        plotting.plot_true_sniffs(filtered_trimmed_trace, true_inhales, inhales, exhales, crossings, trial_number, plot_output_dir, display_plots)
+                        plotting.plot_traces(raw_data, filtered_trimmed_trace, true_inhales, inhales, exhales, trial_number, plot_output_dir, display_plots )
 
                 go_trial_counts = go_trial_counts.fillna(0)
                 false_alarm_counts = false_alarm_counts.fillna(0)

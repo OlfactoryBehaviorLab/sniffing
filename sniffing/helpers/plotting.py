@@ -72,6 +72,32 @@ def plot_true_sniffs(trace, true_inhales, all_inhales, all_exhales, crossings, t
     if display_plots:
         plt.show()
 
+
+def plot_traces(raw_trace, filtered_trace, true_inhales, all_inhales, all_exhales, trial_number, output_dir=None, display=False):
+    fig, axs = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
+    plt.suptitle(f'Raw vs. Final Trace | Trial: {trial_number}', fontsize=16, fontweight='bold')
+    _ = axs[0].title.set_text('Raw Trace')
+    _ = axs[0].plot(raw_trace, color='k')
+
+    _ = axs[1].title.set_text('Filtered Trace with Sniffs')
+    _ = axs[1].plot(filtered_trace, color='c')
+    _ = axs[1].vlines(x=0, ymin=min(filtered_trace), ymax=max(filtered_trace), color='k')
+    # _ = axs[1].hlines(y=np.mean(trace), xmin=trace.index[0], xmax=trace.index[-1], alpha=0.3, color='m')
+    _ = axs[1].scatter(all_inhales, all_inhales.index, marker='x', color='r', label='inhale')
+    _ = axs[1].scatter(all_exhales, all_exhales.index, marker='x', color='orange', label='exhale')
+    _ = axs[1].scatter(true_inhales.index, true_inhales, marker='*', color='m', label='true_inhale')
+    fig.legend(loc=2, fontsize=12)
+    plt.tight_layout()
+
+    if display:
+        plt.show()
+
+    if output_dir is not None:
+        output_path = output_dir.joinpath(f'trial_{trial_number}.pdf')
+        fig.savefig(output_path, dpi=600)
+        plt.close()
+
+
 def plot_binned_frequencies(traces, titles, num_trials, mouse, concentration, display_plots=True):
     colors = ['m', 'c', 'g', 'orange']
     num_traces = len(traces)
