@@ -45,21 +45,18 @@ def process_files(h5_files, output_dir, run_manual_curation=False, filtered_manu
 
                 filtered_trace_keys = list(filtered_traces.keys())
 
-                if filtered_manual_curation:
-                    gui_sniff_traces = analog_trace.AnalogTrace.generate_sniff_traces(filtered_trace_keys, h5, filtered_traces=filtered_traces)
-                else:
-                    gui_sniff_traces = analog_trace.AnalogTrace.generate_sniff_traces(filtered_trace_keys, h5)
+                if run_manual_curation:
+                    if filtered_manual_curation:
+                        gui_sniff_traces = analog_trace.AnalogTrace.generate_sniff_traces(filtered_trace_keys, h5, filtered_traces=filtered_traces)
+                    else:
+                        gui_sniff_traces = analog_trace.AnalogTrace.generate_sniff_traces(filtered_trace_keys, h5)
 
 
-                curated_traces = manual_curation.launch_sniff_gui(gui_sniff_traces, filtered_trace_keys)
-
+                    filtered_trace_keys = manual_curation.launch_sniff_gui(gui_sniff_traces, filtered_trace_keys)
 
                 for trial_number in tqdm(filtered_trace_keys, total=len(filtered_trace_keys), leave=True, position=0):
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[PRE_FV_TIME:]
-
-                    if plot_raw_traces:
-                        raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
-                        plotting.plot_multi_traces([raw_data, filtered_trimmed_trace], trial_number)
+                    raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
 
                     trial_result = h5.trial_parameters.loc[trial_number, 'result']
 
@@ -173,3 +170,5 @@ def process_files(h5_files, output_dir, run_manual_curation=False, filtered_manu
             import traceback
             print(f'Error processing H5 file {h5_file_path}')
             print(traceback.format_exc())
+            if not ignore_errors:
+                raise e
