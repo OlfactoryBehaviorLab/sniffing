@@ -1,11 +1,12 @@
 from dewan_h5 import DewanH5
+from dewan_manual_curation import manual_curation
+from dewan_manual_curation._components import analog_trace
 from .helpers import preprocessing, frequency, plotting
 
 import pandas as pd
 import numpy as np
 from scipy import signal
 from tqdm.auto import tqdm
-
 
 LOWER_FILTER_BAND = 0.01  # Lower Frequency (Hz)
 UPPER_FILTER_BAND = 100  # Upper Frequency (Hz)
@@ -16,7 +17,7 @@ BIN_STEPS = 50 # ms
 
 NAN_THRESHOLD = 20
 
-def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, display_plots=False):
+def process_files(h5_files, output_dir, filtered_manual_curation=True, plot_raw_traces=False, plot_figs=False, display_plots=False):
     for h5_file_path in tqdm(h5_files, total=len(h5_files), desc='Processing H5 Files:'):
         try:
             print(f'Processing {h5_file_path.name}')
@@ -41,6 +42,15 @@ def process_files(h5_files, output_dir, plot_raw_traces=False, plot_figs=True, d
                 filtered_traces = preprocessing.filter_sniff_traces(h5.sniff, bp_filter, baseline=True, z_score=True)
 
                 filtered_trace_keys = list(filtered_traces.keys())
+
+                if filtered_manual_curation:
+                    gui_sniff_traces = analog_trace.AnalogTrace.generate_sniff_traces(filtered_trace_keys, h5, filtered_traces=filtered_traces)
+                else:
+                    gui_sniff_traces = analog_trace.AnalogTrace.generate_sniff_traces(filtered_trace_keys, h5)
+
+
+                curated_traces = manual_curation.launch_sniff_gui(gui_sniff_traces, filtered_trace_keys)
+
 
                 for trial_number in tqdm(filtered_trace_keys, total=len(filtered_trace_keys), leave=True, position=0):
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[PRE_FV_TIME:]
