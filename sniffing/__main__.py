@@ -79,8 +79,9 @@ def main():
     # Use or create output directory
     if args.output_dir:
         _path = Path(args.output_dir)
-        if not _path.exists():
-            raise FileNotFoundError(f"Output directory {args.output_dir} does not exist")
+        _path.mkdir(exist_ok=True, parents=True)
+        # if not _path.exists():
+        #     raise FileNotFoundError(f"Output directory {args.output_dir} does not exist")
         output_dir = _path
     else:
         if file_path:
