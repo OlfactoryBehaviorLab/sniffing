@@ -126,7 +126,7 @@ def process_files(
                     pre_odor_sniff_count = pre_odor_sniffs.shape[0]
                     post_odor_sniff_count = post_odor_sniffs.shape[0]
                     _counts = pd.Series(
-                        (pre_odor_sniff_count, post_odor_sniff_count), name=trial_number
+                        (pre_odor_sniff_count, post_odor_sniff_count), index=[PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS,], name=trial_number
                     )
 
                     inhale_counts = pd.concat((inhale_counts, _counts), axis=1)
@@ -161,7 +161,6 @@ def process_files(
                 # missed_counts.to_excel(file_output_dir.joinpath('missed_counts.xlsx'))
                 # inhalation_durations.to_excel(file_output_dir.joinpath('inhalation_durations.xlsx'))
                 # fig.savefig(file_output_dir.joinpath(f'binned_frequency_hist.pdf'))
-                output
 
                 output.repack_data(
                     h5,
