@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from numba import njit, prange
 from numba import types, typed
 
+
 def _instantaneous_frequency(peaks):
     pairs = zip(peaks.iloc[:-1].index, peaks.iloc[1:].index)
     frequencies = []
@@ -28,7 +29,12 @@ def calc_frequencies(true_inhales, true_exhales):
     return inhale_frequencies, exhale_frequencies, inhale_times, exhale_times
 
 
-def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.Series, window_size_ms: int=100, window_hop_ms: int=10):
+def twoside_moving_window_frequency(
+    inhale_ts: pd.Series,
+    trial_timestamps: pd.Series,
+    window_size_ms: int = 100,
+    window_hop_ms: int = 10,
+):
     """
 
     :param inhale_ts:
@@ -37,7 +43,7 @@ def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.S
     :param window_hop_ms:
     :return:
     """
-    ts_bins = pd.DataFrame(columns=['count', 'frequency'])
+    ts_bins = pd.DataFrame(columns=["count", "frequency"])
 
     pre_fv_timestamps = trial_timestamps[trial_timestamps <= 0]
     post_fv_timestamps = trial_timestamps[trial_timestamps >= 0]
@@ -47,8 +53,8 @@ def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.S
     while win_start >= pre_fv_timestamps[0]:
         num_current_bin = inhale_ts.between(win_start, win_end).sum()
         frequency = _calc_freq(num_current_bin, window_size_ms)
-        ts_bins.loc[win_end, 'count'] = num_current_bin
-        ts_bins.loc[win_end, 'frequency'] = frequency
+        ts_bins.loc[win_end, "count"] = num_current_bin
+        ts_bins.loc[win_end, "frequency"] = frequency
         win_end -= window_hop_ms
         win_start = win_end - window_size_ms
 
@@ -57,8 +63,8 @@ def twoside_moving_window_frequency(inhale_ts: pd.Series, trial_timestamps: pd.S
     while win_end <= (post_fv_timestamps[-1]):
         num_current_bin = inhale_ts.between(win_start, win_end).sum()
         frequency = _calc_freq(num_current_bin, window_size_ms)
-        ts_bins.loc[win_start, 'count'] = num_current_bin
-        ts_bins.loc[win_start, 'frequency'] = frequency
+        ts_bins.loc[win_start, "count"] = num_current_bin
+        ts_bins.loc[win_start, "frequency"] = frequency
         win_start += window_hop_ms
         win_end = win_start + window_size_ms
 
@@ -74,7 +80,12 @@ def _calc_freq(counts, bin_dur_ms) -> float:
 
 
 @njit(parallel=True)
-def oneside_moving_window_frequency(inhale_ts: np.array, trial_timestamps: np.array, window_size_ms: int=100, window_step_ms: int=10):
+def oneside_moving_window_frequency(
+    inhale_ts: np.array,
+    trial_timestamps: np.array,
+    window_size_ms: int = 100,
+    window_step_ms: int = 10,
+):
     """
 
     :param inhale_ts:
@@ -105,7 +116,9 @@ def oneside_moving_window_frequency(inhale_ts: np.array, trial_timestamps: np.ar
 
 
 @njit(parallel=True)
-def static_window_frequency(inhale_ts: np.array, trial_timestamps: np.array, window_size_ms: int=100) -> tuple[np.array, np.array, np.array]:
+def static_window_frequency(
+    inhale_ts: np.array, trial_timestamps: np.array, window_size_ms: int = 100
+) -> tuple[np.array, np.array, np.array]:
     bin_starts = np.arange(trial_timestamps[0], trial_timestamps[-1], window_size_ms)
     bins = list(zip(bin_starts[:-1], bin_starts[1:]))
 
