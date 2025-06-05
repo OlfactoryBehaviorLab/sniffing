@@ -54,7 +54,7 @@ def main():
     args = parser.parse_args()
 
     if args.single and args.batch:
-        warnings.warn("Cannot batch process a single file! Defaulting to single file")
+        warnings.warn("Cannot batch process a single file! Defaulting to single file", stacklevel=2)
         args.batch = False
 
     # If we specify single, we're only processing one file
@@ -87,7 +87,7 @@ def main():
             if len(_path) > 0:
                 data_dir = Path(_path)
             else:
-                warnings.warn(f"No data directory was selected! Using {DEFAULT_DIR}")
+                warnings.warn(f"No data directory was selected! Using {DEFAULT_DIR}", stacklevel=2)
                 _path = Path(DEFAULT_DIR)
                 if not _path.exists():
                     raise FileNotFoundError(

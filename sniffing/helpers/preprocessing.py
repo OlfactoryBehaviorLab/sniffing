@@ -10,7 +10,7 @@ from scipy import signal, stats
 
 def filter_sniff_traces(
     sniff_traces: dict,
-    filter,
+    sos_filter,
     baseline: bool = False,
     z_score: bool = False,
     shift: bool = False,
@@ -18,7 +18,7 @@ def filter_sniff_traces(
     """
     Function takes a set of sniff traces and a Scipy signal filter and applies it to each trace.
     :param sniff_traces: (dict) Dictionary containing sniff traces
-    :param filter: Scipy filter with 'sos' output type
+    :param sos_filter: Scipy filter with 'sos' output type
     :param baseline: (bool) If true, apply a 1Hz highpass butterworth filter to remove any baseline drift from the trace
     :param z_score: (bool) If true, zscore each sniff trace to itself
     :param shift: (bool) If true, the first index is subtracted from the data to make index [0] zero
@@ -34,7 +34,7 @@ def filter_sniff_traces(
             print(f"{name} has no sniff data, skipping!")
             continue
 
-        filtered_trace = signal.sosfiltfilt(filter, trace)
+        filtered_trace = signal.sosfiltfilt(sos_filter, trace)
         if baseline:
             filtered_trace = signal.sosfiltfilt(baseline_filter, filtered_trace)
         if z_score:
@@ -143,7 +143,7 @@ def get_flanking_exhales(true_inhales: pd.Series, exhales: pd.Series):
         index=true_inhales, columns=["pre", "post", "pre_mag", "post_mag"]
     )
 
-    exhale_timestamps = exhales.values
+    exhale_timestamps = exhales.to_numpy()
     exhale_magnitudes = exhales.index
 
     for inhale in true_inhales:
@@ -190,9 +190,9 @@ def get_inhalation_durations(
     )
 
     for inhale, inhale_mag in true_inhales.iterrows():
-        inhale_mag = inhale_mag.values
+        inhale_mag = inhale_mag.to_numpy()
         pre_exhale_ts, post_exhale_ts, pre_exhale_mag, post_exhale_mag = (
-            flanking_exhales.loc[inhale].values
+            flanking_exhales.loc[inhale].to_numpy()
         )
 
         # Sometimes we can't calculate the duration of the first/last sniff
@@ -207,10 +207,10 @@ def get_inhalation_durations(
         right_midpoint = (inhale_mag + post_exhale_mag) / 2
 
         left_timestamp = left_sniff_trace_subset.index[
-            left_midpoint <= left_sniff_trace_subset.values
+            left_midpoint <= left_sniff_trace_subset.to_numpy()
         ][-1]
         right_timestamp = right_sniff_trace_subset.index[
-            right_midpoint >= right_sniff_trace_subset.values
+            right_midpoint >= right_sniff_trace_subset.to_numpy()
         ][-1]
 
         duration = right_timestamp - left_timestamp

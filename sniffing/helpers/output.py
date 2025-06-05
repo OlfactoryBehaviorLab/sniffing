@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 from dewan_h5 import DewanH5
 
@@ -65,7 +64,7 @@ def repack_data(
     filename = f"{animal_ID}-{concentration}-combined.xlsx"
     output_path = output_dir.joinpath(filename)
 
-    combined_df = combined_df.infer_objects().fillna('X')
+    combined_df = combined_df.infer_objects().fillna("X")
 
     combined_df.to_excel(output_path)
 
@@ -80,15 +79,16 @@ def unpack_inhale_durations(inhale_durations, trials):
 
     return pre_fv_inhalation_durations, post_fv_inhalation_durations
 
+
 def _get_pre_fv_inhales(trial_df: pd.DataFrame):
     trial_name = trial_df.index.get_level_values(0).unique()[0]
     trial_df.index = trial_df.index.droplevel(0)
     durations = trial_df.loc["duration"]
     timestamps = trial_df.loc["timestamps"]
     pre_fv_durations = durations[timestamps < 0].iloc[-3:].reset_index(drop=True)
-    pre_fv_series = pd.Series(pre_fv_durations, name=trial_name, index=[2, 1, 0])
 
-    return pre_fv_series
+    return pd.Series(pre_fv_durations, name=trial_name, index=[2, 1, 0])
+
 
 def _get_post_fv_inhales(trial_df: pd.DataFrame):
     trial_name = trial_df.index.get_level_values(0).unique()[0]
@@ -96,6 +96,5 @@ def _get_post_fv_inhales(trial_df: pd.DataFrame):
     durations = trial_df.loc["duration"]
     timestamps = trial_df.loc["timestamps"]
     post_fv_durations = durations[timestamps >= 0].iloc[:3].reset_index(drop=True)
-    post_fv_series = pd.Series(post_fv_durations, name=trial_name, index=[0, 1, 2])
 
-    return post_fv_series
+    return pd.Series(post_fv_durations, name=trial_name, index=[0, 1, 2])

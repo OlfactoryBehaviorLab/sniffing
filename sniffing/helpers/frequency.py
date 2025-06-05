@@ -1,14 +1,10 @@
 import numpy as np
 import pandas as pd
-from scipy import signal, fft
-import matplotlib.pyplot as plt
-
 from numba import njit, prange
-from numba import types, typed
 
 
 def _instantaneous_frequency(peaks):
-    pairs = zip(peaks.iloc[:-1].index, peaks.iloc[1:].index)
+    pairs = zip(peaks.iloc[:-1].index, peaks.iloc[1:].index, strict=True)
     frequencies = []
     times = []
 
@@ -98,7 +94,7 @@ def oneside_moving_window_frequency(
     start_bins = np.arange(trial_timestamps[0], trial_timestamps[-1], window_step_ms)
     end_bins = start_bins + window_size_ms
     good_bin_indices = np.where(end_bins <= trial_timestamps[-1])[0]
-    window_bins = np.array(list(zip(start_bins, end_bins)))[good_bin_indices]
+    window_bins = np.array(list(zip(start_bins, end_bins, strict=True)))[good_bin_indices]
     bin_centers = np.zeros(window_bins.shape[0])
     counts = np.zeros(window_bins.shape[0])
     frequencies = np.zeros(window_bins.shape[0])
@@ -120,7 +116,7 @@ def static_window_frequency(
     inhale_ts: np.array, trial_timestamps: np.array, window_size_ms: int = 100
 ) -> tuple[np.array, np.array, np.array]:
     bin_starts = np.arange(trial_timestamps[0], trial_timestamps[-1], window_size_ms)
-    bins = list(zip(bin_starts[:-1], bin_starts[1:]))
+    bins = list(zip(bin_starts[:-1], bin_starts[1:], strict=True))
 
     bin_counts = np.zeros(len(bins))
     bin_freq = np.copy(bin_counts)

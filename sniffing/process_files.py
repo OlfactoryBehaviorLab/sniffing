@@ -110,7 +110,7 @@ def process_files(
                         names="timestamps"
                     )
                     new_columns = pd.MultiIndex.from_product(
-                        [[str(trial_number)], trial_inhalation_duration.columns.values],
+                        [[str(trial_number)], trial_inhalation_duration.columns.to_numpy()],
                         names=["Trial", "Data"],
                     )
                     trial_inhalation_duration.columns = new_columns
