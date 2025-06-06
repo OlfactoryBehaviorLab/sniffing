@@ -112,7 +112,7 @@ def unpack_inhale_durations(
 
 def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
     trial_name = trial_df.index.get_level_values(0).unique()[0]
-    pre_fv_durations = pd.Series(np.zeros(3), name=trial_name, index=[2, 1, 0])
+    pre_fv_durations = pd.Series(np.zeros(3), name=trial_name, index=[2, 1, 0], dtype=object)
     trial_df.index = trial_df.index.droplevel(0)
     durations = trial_df.loc["duration"]
     timestamps = trial_df.loc["timestamps"]
@@ -129,14 +129,14 @@ def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa
     shared_index = np.intersect1d(
         pre_fv_durations.index, durations_in_window.index
     )  # To avoid out-of-bounds indexing, find the durations that share an index with our series
-    pre_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index]
+    pre_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index].astype(object)
 
     return pre_fv_durations
 
 
 def _get_post_fv_inhales(trial_df: pd.DataFrame, POST_ODOR_COUNT_TIME_MS):  # noqa: N803
     trial_name = trial_df.index.get_level_values(0).unique()[0]
-    post_fv_durations = pd.Series(np.zeros(3), name=trial_name, index=[0, 1, 2])
+    post_fv_durations = pd.Series(np.zeros(3), name=trial_name, index=[0, 1, 2], dtype=object)
     trial_df.index = trial_df.index.droplevel(0)
     durations = trial_df.loc["duration"]
     timestamps = trial_df.loc["timestamps"]
@@ -144,6 +144,6 @@ def _get_post_fv_inhales(trial_df: pd.DataFrame, POST_ODOR_COUNT_TIME_MS):  # no
     timestamps_in_window = (timestamps < POST_ODOR_COUNT_TIME_MS) & (timestamps >= 0)
     durations_in_window = durations[timestamps_in_window].reset_index(drop=True)
     shared_index = np.intersect1d(post_fv_durations.index, durations_in_window.index)
-    post_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index]
+    post_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index].astype(object)
 
     return post_fv_durations
