@@ -136,7 +136,7 @@ def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa
 
 def _get_post_fv_inhales(trial_df: pd.DataFrame, POST_ODOR_COUNT_TIME_MS):  # noqa: N803
     trial_name = trial_df.index.get_level_values(0).unique()[0]
-    post_fv_durations = pd.Series(np.zeros(3), name=trial_name, index=[2, 1, 0])
+    post_fv_durations = pd.Series(np.zeros(3), name=trial_name, index=[0, 1, 2])
     trial_df.index = trial_df.index.droplevel(0)
     durations = trial_df.loc["duration"]
     timestamps = trial_df.loc["timestamps"]
