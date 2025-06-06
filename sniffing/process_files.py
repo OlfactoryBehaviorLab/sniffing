@@ -110,7 +110,10 @@ def process_files(
                         names="timestamps"
                     )
                     new_columns = pd.MultiIndex.from_product(
-                        [[str(trial_number)], trial_inhalation_duration.columns.to_numpy()],
+                        [
+                            [str(trial_number)],
+                            trial_inhalation_duration.columns.to_numpy(),
+                        ],
                         names=["Trial", "Data"],
                     )
                     trial_inhalation_duration.columns = new_columns
@@ -126,7 +129,9 @@ def process_files(
                     pre_odor_sniff_count = pre_odor_sniffs.shape[0]
                     post_odor_sniff_count = post_odor_sniffs.shape[0]
                     _counts = pd.Series(
-                        (pre_odor_sniff_count, post_odor_sniff_count), index=[PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS,], name=trial_number
+                        (pre_odor_sniff_count, post_odor_sniff_count),
+                        index=[PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS],
+                        name=trial_number,
                     )
 
                     inhale_counts = pd.concat((inhale_counts, _counts), axis=1)
@@ -168,6 +173,8 @@ def process_files(
                     inhale_latencies,
                     inhale_durations,
                     file_output_dir,
+                    PRE_ODOR_COUNT_TIME_MS,
+                    POST_ODOR_COUNT_TIME_MS,
                 )
                 h5.export(file_output_dir)
 
