@@ -50,11 +50,21 @@ def main():
     parser.add_argument(
         "-d", "--data_dir", help="Path to data directory, implies --batch"
     )
+    parser.add_argument(
+        "-i",
+        "--ignore_errors",
+        default=False,
+        help="Continue processing files and ignore any errors",
+        action="store_true",
+    )
     parser.add_argument("-o", "--output_dir", help="Path to output directory")
     args = parser.parse_args()
 
     if args.single and args.batch:
-        warnings.warn("Cannot batch process a single file! Defaulting to single file", stacklevel=2)
+        warnings.warn(
+            "Cannot batch process a single file! Defaulting to single file",
+            stacklevel=2,
+        )
         args.batch = False
 
     # If we specify single, we're only processing one file
@@ -87,7 +97,9 @@ def main():
             if len(_path) > 0:
                 data_dir = Path(_path)
             else:
-                warnings.warn(f"No data directory was selected! Using {DEFAULT_DIR}", stacklevel=2)
+                warnings.warn(
+                    f"No data directory was selected! Using {DEFAULT_DIR}", stacklevel=2
+                )
                 _path = Path(DEFAULT_DIR)
                 if not _path.exists():
                     raise FileNotFoundError(
@@ -116,7 +128,7 @@ def main():
 
             for animal_dir in animal_dirs:
                 h5_files = list(animal_dir.glob("*.h5"))
-                process_files(h5_files, output_dir)
+                process_files(h5_files, output_dir, ignore_errors=args.ignore_errors)
         elif file_path:
             process_files([file_path], output_dir)
     else:
