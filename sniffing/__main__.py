@@ -1,5 +1,5 @@
 from .process_files import process_files
-from combined import process_combined
+from .combined import process_combined
 import argparse
 import sys
 import warnings
@@ -44,9 +44,9 @@ def main():
     parser.add_argument(
         "-c", "--combined", action="store_true", help="Run combined analysis"
     )
-    parser.add_argument(
-        "-b", "--batch", action="store_true", help="Batch process H5 files"
-    )
+    # parser.add_argument(
+    #     "-b", "--batch", action="store_true", help="Batch process H5 files"
+    # )
     parser.add_argument(
         "-d", "--data_dir", help="Path to data directory, implies --batch"
     )
@@ -60,18 +60,18 @@ def main():
     parser.add_argument("-o", "--output_dir", help="Path to output directory")
     args = parser.parse_args()
 
-    if args.single and args.batch:
-        warnings.warn(
-            "Cannot batch process a single file! Defaulting to single file",
-            stacklevel=2,
-        )
-        args.batch = False
+    # if args.single and args.batch:
+    #     warnings.warn(
+    #         "Cannot batch process a single file! Defaulting to single file",
+    #         stacklevel=2,
+    #     )
+    #     args.batch = False
 
     if args.single and args.combined:
         raise argparse.ArgumentError(args.single, 'Cannot run combined processing on a single file! Please specify a data directory!')
 
-    if args.combined and args.batch:
-        warnings.warn('Batch processing (-b) is implied for combined processing!', stacklevel=2)
+    # if args.combined and args.batch:
+    #     warnings.warn('Batch processing (-b) is implied for combined processing!', stacklevel=2)
 
 
     # If we specify single, we're only processing one file
@@ -87,9 +87,8 @@ def main():
             if not _file_path.exists():
                 raise FileNotFoundError(f"File {args.single} does not exist!")
             file_path = _file_path
-
-    # The default is batch processing, so see if the user explicitly specified, or didn't specify a single file
-    elif args.batch or args.combined:
+    # The default is batch processing, so it is the mode if the user didn't specify a single file
+    else:
         print("Batch Processing!")
         # Do we need/have a data directory?
         if args.data_dir:
