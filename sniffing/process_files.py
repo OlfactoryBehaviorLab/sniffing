@@ -1,7 +1,7 @@
 from dewan_h5 import DewanH5
 from dewan_manual_curation import manual_curation
 from dewan_manual_curation._components import analog_trace
-from .helpers import preprocessing, output, plotting
+from .helpers import frequency, preprocessing, output, plotting
 import pandas as pd
 import numpy as np
 from scipy import signal
@@ -39,6 +39,8 @@ def process_files(
                 )
                 inhale_latencies = pd.DataFrame(index=[1, 2, 3])
                 inhale_durations = pd.DataFrame()
+
+                binned_counts = pd.DataFrame()
 
                 file_output_dir = output_dir.joinpath(
                     f"mouse-{h5.mouse}", h5.concentration
@@ -78,14 +80,14 @@ def process_files(
                     )
 
                 for trial_number in tqdm(
-                    filtered_trace_keys,
-                    total=len(filtered_trace_keys),
-                    leave=True,
-                    position=0,
+                        filtered_trace_keys,
+                        total=len(filtered_trace_keys),
+                        leave=True,
+                        position=0,
                 ):
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[
-                        PRE_FV_TIME:
-                    ]
+                                             PRE_FV_TIME:
+                                             ]
                     raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
 
                     # Find inhales/exhales and select true inhales
@@ -134,6 +136,17 @@ def process_files(
                         name=trial_number,
                     )
 
+                    _trimmed_timestamps = np.hstack((pre_odor_sniffs.index.to_numpy(), post_odor_sniffs.index.to_numpy()))
+                    bin_centers, binned_sniff_counts, _ = frequency.oneside_moving_window_counts(
+                        _trimmed_timestamps,
+                        filtered_trimmed_trace.index.to_numpy(),
+                        250,
+                        50
+                    )
+
+                    trial_binned_counts = pd.Series(binned_sniff_counts, index=bin_centers)
+                    binned_counts = pd.concat((binned_counts, trial_binned_counts), axis=1)
+
                     inhale_counts = pd.concat((inhale_counts, _counts), axis=1)
 
                     post_odor_latencies = pd.Series(
@@ -177,6 +190,10 @@ def process_files(
                     POST_ODOR_COUNT_TIME_MS,
                 )
                 h5.export(file_output_dir)
+                binned_sniff_counts_path = file_output_dir.joinpath('binned_sniff_counts.xlsx')
+
+                binned_counts = binned_counts.fillna('X').infer_objects()
+                binned_counts.to_excel(binned_sniff_counts_path)
 
         except Exception as e:
             import traceback

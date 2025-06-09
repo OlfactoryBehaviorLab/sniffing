@@ -76,7 +76,7 @@ def _calc_freq(counts, bin_dur_ms) -> float:
 
 
 @njit(parallel=True)
-def oneside_moving_window_frequency(
+def oneside_moving_window_counts(
     inhale_ts: np.array,
     trial_timestamps: np.array,
     window_size_ms: int = 100,
@@ -94,7 +94,7 @@ def oneside_moving_window_frequency(
     start_bins = np.arange(trial_timestamps[0], trial_timestamps[-1], window_step_ms)
     end_bins = start_bins + window_size_ms
     good_bin_indices = np.where(end_bins <= trial_timestamps[-1])[0]
-    window_bins = np.array(list(zip(start_bins, end_bins, strict=True)))[good_bin_indices]
+    window_bins = np.array(list(zip(start_bins, end_bins)))[good_bin_indices] # noqa: B905
     bin_centers = np.zeros(window_bins.shape[0])
     counts = np.zeros(window_bins.shape[0])
     frequencies = np.zeros(window_bins.shape[0])
