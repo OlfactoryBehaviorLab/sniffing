@@ -1,5 +1,5 @@
 from .process_files import process_files
-
+from combined import process_combined
 import argparse
 import sys
 import warnings
@@ -67,6 +67,13 @@ def main():
         )
         args.batch = False
 
+    if args.single and args.combined:
+        raise argparse.ArgumentError(args.single, 'Cannot run combined processing on a single file! Please specify a data directory!')
+
+    if args.combined and args.batch:
+        warnings.warn('Batch processing (-b) is implied for combined processing!', stacklevel=2)
+
+
     # If we specify single, we're only processing one file
     if args.single is not None:
         if len(args.single) == 0:
@@ -82,7 +89,7 @@ def main():
             file_path = _file_path
 
     # The default is batch processing, so see if the user explicitly specified, or didn't specify a single file
-    elif args.batch or not args.single:
+    elif args.batch or args.combined:
         print("Batch Processing!")
         # Do we need/have a data directory?
         if args.data_dir:
@@ -132,7 +139,26 @@ def main():
         elif file_path:
             process_files([file_path], output_dir)
     else:
-        print("Combined!")
+        concentration_files = {}
+
+        for animal_dir in data_dir.iterdir():
+            for concentration_dir in animal_dir.iterdir():
+
+                if concentration_dir.name not in concentration_files:
+                    concentration_files[concentration_dir.name] = {}
+
+
+
+                windowed_bin_counts = concentration_dir.joinpath('binned_sniff_counts.xlsx')
+                combined_data_matrix = concentration_dir.joinpath(
+                    f'{animal_dir.name}-{concentration_dir.name}-combined.xlsx'
+                )
+                concentration_files[concentration_dir.name][animal_dir.name] = {
+                    'combined': combined_data_matrix,
+                    'window': windowed_bin_counts,
+                }
+
+        process_combined(concentration_files)
 
 
 if __name__ == "__main__":
