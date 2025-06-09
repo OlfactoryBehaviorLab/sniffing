@@ -103,10 +103,10 @@ def oneside_moving_window_frequency(
         win_start, win_end = window_bins[i]
 
         num_sniffs = np.logical_and(win_end > inhale_ts, inhale_ts >= win_start).sum()
-        frequency = _calc_freq(num_sniffs, window_size_ms)
+        # frequency = _calc_freq(num_sniffs, window_size_ms)
         bin_centers[i] = (win_start + win_end) / 2
         counts[i] = num_sniffs
-        frequencies[i] = frequency
+        # frequencies[i] = frequency
 
     return bin_centers, counts, frequencies
 
