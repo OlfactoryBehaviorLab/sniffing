@@ -27,6 +27,8 @@ def process_files(
     display_plots=False,
     ignore_errors=False,
 ):
+    h5_stats = pd.DataFrame()
+
     for h5_file_path in tqdm(
         h5_files, total=len(h5_files), desc="Processing H5 Files:"
     ):
@@ -34,6 +36,16 @@ def process_files(
             print(f"Processing {h5_file_path.name}")
 
             with DewanH5(h5_file_path, drop_early_lick_trials=True) as h5:
+                _total_original_trials = (h5.total_trials + len(h5.early_lick_trials) + len(h5.short_trials) + len(h5.missing_packet_trials))
+                _perc_loss = round(100 * (_total_original_trials - h5.total_trials) / _total_original_trials, 2)
+                h5_trial_info = pd.Series(
+                    (
+                        h5.mouse, h5.concentration, h5.total_trials, len(h5.early_lick_trials), len(h5.short_trials),
+                        len(h5.missing_packet_trials), _total_original_trials, _perc_loss
+                    )
+                )
+                h5_stats = pd.concat((h5_stats, h5_trial_info), axis=1)
+
                 inhale_counts = pd.DataFrame(
                     index=[PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS]
                 )
@@ -202,3 +214,10 @@ def process_files(
             print(traceback.format_exc())
             if not ignore_errors:
                 raise e
+
+    h5_stats = h5_stats.T
+    h5_stats.columns =['ID', 'CONC', 'GOOD', 'EARLY', 'SHORT', 'PACKETS', 'TOTAL', 'PERCENT_LOSS']
+    stats_output_path = file_output_dir.parent.joinpath('all_h5_stats.xlsx')
+    h5_stats.to_excel(stats_output_path)
+
+    return h5_stats

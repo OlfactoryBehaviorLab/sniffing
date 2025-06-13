@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .process_files import process_files
 from .combined import process_combined
 import argparse
@@ -131,12 +133,15 @@ def main():
         if data_dir:
             animal_dirs = data_dir.iterdir()
             animal_dirs = [_dir for _dir in animal_dirs if "Z" not in _dir.name]
-
+            all_h5_stats = pd.DataFrame()
             for animal_dir in animal_dirs:
                 h5_files = list(animal_dir.glob("*.h5"))
-                process_files(h5_files, output_dir, ignore_errors=args.ignore_errors)
+                _animal_h5_stats = process_files(h5_files, output_dir, ignore_errors=args.ignore_errors)
+                all_h5_stats = pd.concat([all_h5_stats, _animal_h5_stats], ignore_index=True)
+            h5_stats_output_path = output_dir.joinpath("all_h5_stats.xlsx")
+            all_h5_stats.to_excel(h5_stats_output_path)
         elif file_path:
-            process_files([file_path], output_dir)
+            _ = process_files([file_path], output_dir)
     else:
         concentration_files = {}
 
@@ -149,9 +154,7 @@ def main():
 
 
                 windowed_bin_counts = concentration_dir.joinpath('binned_sniff_counts.xlsx')
-                combined_data_matrix = concentration_dir.joinpath(
-                    f'{animal_dir.name}-{concentration_dir.name}-combined.xlsx'
-                )
+                combined_data_matrix = list(concentration_dir.glob('*TrialParams.xlsx'))[0]
                 concentration_files[concentration_dir.name][animal_dir.name] = {
                     'combined': combined_data_matrix,
                     'window': windowed_bin_counts,
