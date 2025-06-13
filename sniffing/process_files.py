@@ -151,12 +151,12 @@ def process_files(
                     _trimmed_timestamps = np.hstack((pre_odor_sniffs.index.to_numpy(), post_odor_sniffs.index.to_numpy()))
                     bin_centers, binned_sniff_counts, _ = frequency.oneside_moving_window_counts(
                         _trimmed_timestamps,
-                        filtered_trimmed_trace.index.to_numpy(),
+                        np.array((PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS)),
                         250,
                         50
                     )
 
-                    trial_binned_counts = pd.Series(binned_sniff_counts, index=bin_centers)
+                    trial_binned_counts = pd.Series(binned_sniff_counts, index=bin_centers, name=trial_number)
                     binned_counts = pd.concat((binned_counts, trial_binned_counts), axis=1)
 
                     inhale_counts = pd.concat((inhale_counts, _counts), axis=1)
