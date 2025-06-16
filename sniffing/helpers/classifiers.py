@@ -53,6 +53,21 @@ def _run_svm(
 
     return window_name, bagged_score, individual_scores, individual_CMS
 
+def convert_results(predictions: np.ndarray):
+    converted_results = []
+
+    for prediction in predictions:
+            if prediction == 0:
+                converted_results.append('go')
+            elif prediction == 1:
+                converted_results.append('nogo')
+            elif prediction == 'go':
+                converted_results.append(0)
+            elif prediction == 'nogo':
+                converted_results.append(1)
+
+    return np.array(converted_results)
+
 
 def zscore_data(windowed_sniff_counts: pd.DataFrame) -> pd.DataFrame:
     transformed_data = StandardScaler().fit_transform(windowed_sniff_counts)
