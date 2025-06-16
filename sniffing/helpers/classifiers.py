@@ -1,5 +1,6 @@
 from typing import Iterable
 from concurrent.futures import ProcessPoolExecutor
+import logging
 
 import pandas as pd
 import numpy as np
@@ -25,6 +26,7 @@ def _run_svm(
     window_name, sniff_count_window = iter_data
     window_name = str(window_name)
 
+    logging.info("Running SVM for %s", window_name)
     x_train, x_test, y_train, y_test = train_test_split(
         sniff_count_window,
         sniff_count_window.index,
@@ -39,7 +41,8 @@ def _run_svm(
     bagging_classifier.fit(x_train, y_train)
     bagged_score = bagging_classifier.score(x_test, y_test)
 
-    for sub_estimator in bagging_classifier.estimators_:
+    for num, sub_estimator in enumerate(bagging_classifier.estimators_):
+        logging.info("Getting scores from subestimator %i for concentration %s", num, window_name)
         sub_estimator_score = sub_estimator.score(x_test, y_test)
         sub_estimator_predictions = sub_estimator.predict(x_test)
         sub_estimator_cm = confusion_matrix(y_test, sub_estimator_predictions)
@@ -77,6 +80,7 @@ def decode_trial_type(
         for name, bagged_score, individual_scores, individual_CMS in ppe.map(
             svm_function, scaled_windowed_sniff_counts.items()
         ):
+            logging.info("Received results for %s", name)
             scores.loc[name] = bagged_score
             individual_scores[name] = pd.DataFrame(
                 individual_scores, index=np.arange(len(individual_scores))
