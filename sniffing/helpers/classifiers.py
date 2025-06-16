@@ -56,7 +56,7 @@ def _run_svm(
 
 def zscore_data(windowed_sniff_counts: pd.DataFrame) -> pd.DataFrame:
     transformed_data = StandardScaler().fit_transform(windowed_sniff_counts)
-    return pd.DataFrame(transformed_data, columns=windowed_sniff_counts.columns)
+    return pd.DataFrame(transformed_data, index = windowed_sniff_counts.index, columns=windowed_sniff_counts.columns)
 
 
 def decode_trial_type(
