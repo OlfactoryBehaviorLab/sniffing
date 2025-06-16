@@ -101,4 +101,25 @@ def decode_trial_type(
 
     return all_scores, all_individual_scores, all_individual_CMS
 
-    return scores, individual_scores, individual_CMS
+
+def decode_trial_type_single(
+    windowed_sniff_counts: pd.DataFrame,
+    test_train_split: float = 0.2,
+    num_splits: int = 20
+) -> tuple[pd.Series, dict[str, pd.DataFrame], dict[str, list[np.ndarray]]]:
+
+    all_scores: pd.Series = pd.Series(index=windowed_sniff_counts.columns)
+    all_individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(windowed_sniff_counts.columns)
+    all_individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(windowed_sniff_counts.columns)
+
+    for data in windowed_sniff_counts.items():
+        name, bagged_score, individual_scores, individual_CMS = _run_svm(data,
+                                                                         test_train_split=test_train_split,
+                                                                         num_splits=num_splits)
+        all_scores.loc[name] = bagged_score
+        all_individual_scores[name] = pd.DataFrame(
+            individual_scores, index=np.arange(len(individual_scores))
+        )
+        all_individual_CMS[name] = individual_CMS
+
+    return all_scores, all_individual_scores, all_individual_CMS
