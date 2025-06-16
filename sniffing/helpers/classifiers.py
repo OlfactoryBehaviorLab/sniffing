@@ -46,7 +46,9 @@ def _run_svm(
         logging.info("Getting scores from subestimator %i for concentration %s", num, window_name)
         sub_estimator_score = sub_estimator.score(x_test, y_test)
         sub_estimator_predictions = sub_estimator.predict(x_test)
-        sub_estimator_cm = confusion_matrix(y_test, sub_estimator_predictions)
+        sub_estimator_score = sub_estimator.score(x_test, convert_results(y_test))
+        _converted_predictions = convert_results(sub_estimator_predictions)
+        sub_estimator_cm = confusion_matrix(y_test, _converted_predictions)
 
         individual_scores.append(sub_estimator_score)
         individual_CMS.append(sub_estimator_cm)
