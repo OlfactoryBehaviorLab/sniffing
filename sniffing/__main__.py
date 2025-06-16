@@ -162,7 +162,7 @@ def main():
                     'window': windowed_bin_counts,
                 }
 
-        process_combined(concentration_files)
+        process_combined(concentration_files, output_dir)
 
 
 if __name__ == "__main__":

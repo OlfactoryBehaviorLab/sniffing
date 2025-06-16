@@ -152,7 +152,7 @@ def process_files(
                     bin_centers, binned_sniff_counts, _ = frequency.oneside_moving_window_counts(
                         _trimmed_timestamps,
                         np.array((PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS)),
-                        250,
+                        100,
                         50
                     )
 
