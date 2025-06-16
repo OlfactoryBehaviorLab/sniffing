@@ -15,9 +15,10 @@ from sklearn.metrics import confusion_matrix
 MIN_TRIAL_NUMBER = 40
 RANDOM_SEED = 1749483131
 
+logging.basicConfig(level=logging.NOTSET)
 
 def _run_svm(
-    iter_data: tuple[object, pd.DataFrame],
+    iter_data: tuple[str, pd.DataFrame],
     test_train_split: float = 0.2,
     num_splits: int = 20,
 ) -> tuple[str, float, Iterable[float], Iterable[np.ndarray]]:
@@ -26,6 +27,8 @@ def _run_svm(
 
     window_name, sniff_count_window = iter_data
     window_name = int(window_name)
+
+    logging.info("Running SVM for %i", window_name)
 
     sniff_count_window = pd.DataFrame(sniff_count_window)
 

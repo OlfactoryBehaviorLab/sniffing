@@ -5,13 +5,15 @@ from .combined import process_combined
 import argparse
 import sys
 import warnings
+import logging
+
 
 from PySide6.QtWidgets import QFileDialog, QApplication
 from pathlib import Path
 
 DEFAULT_DIR = Path("/mnt/r2d2/5_Projects/Concentration_Sniffing_Dynamics/Raw_Data")
 
-
+logging.basicConfig(level=logging.NOTSET)
 def select_dialog(file=False):
     dialog = QFileDialog()
     if file:
