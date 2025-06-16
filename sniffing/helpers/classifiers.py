@@ -1,5 +1,6 @@
 from typing import Iterable
 from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 import logging
 
 import pandas as pd
@@ -63,28 +64,24 @@ def decode_trial_type(
     test_train_split: float = 0.2,
     num_splits: int = 20,
 ):
-    scores: pd.Series = pd.Series(index=windowed_sniff_counts.columns)
-    individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(
-        windowed_sniff_counts.columns
-    )
-    individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(
-        windowed_sniff_counts.columns
-    )
 
-    scaled_windowed_sniff_counts = zscore_data(windowed_sniff_counts)
+    all_scores: pd.Series = pd.Series(index=windowed_sniff_counts.columns)
+    all_individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(windowed_sniff_counts.columns)
+    all_individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(windowed_sniff_counts.columns)
 
-    def svm_function(iterable):
-        _run_svm(iterable, test_train_split=test_train_split, num_splits=num_splits)
+    partial_function = partial(_run_svm, test_train_split=test_train_split, num_splits=num_splits)
 
     with ProcessPoolExecutor() as ppe:
         for name, bagged_score, individual_scores, individual_CMS in ppe.map(
-            svm_function, scaled_windowed_sniff_counts.items()
+            partial_function, windowed_sniff_counts.items()
         ):
             logging.info("Received results for %s", name)
-            scores.loc[name] = bagged_score
-            individual_scores[name] = pd.DataFrame(
+            all_scores.loc[name] = bagged_score
+            all_individual_scores[name] = pd.DataFrame(
                 individual_scores, index=np.arange(len(individual_scores))
             )
-            individual_CMS[name] = individual_CMS
+            all_individual_CMS[name] = individual_CMS
+
+    return all_scores, all_individual_scores, all_individual_CMS
 
     return scores, individual_scores, individual_CMS
