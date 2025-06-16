@@ -25,26 +25,29 @@ def _run_svm(
     individual_CMS: list[np.ndarray] = []
 
     window_name, sniff_count_window = iter_data
-    window_name = str(window_name)
+    window_name = int(window_name)
 
-    logging.info("Running SVM for %s", window_name)
+    sniff_count_window = pd.DataFrame(sniff_count_window)
+
+    # sniff_count_window = zscore_data(sniff_count_window)
+
     x_train, x_test, y_train, y_test = train_test_split(
         sniff_count_window,
         sniff_count_window.index,
         test_size=test_train_split,
         random_state=RANDOM_SEED,
+        stratify=sniff_count_window.index
     )
 
     svm = LinearSVC(dual="auto", random_state=RANDOM_SEED)
     bagging_classifier = BaggingClassifier(
-        svm, n_estimators=num_splits, random_state=RANDOM_SEED, n_jobs=-1
+        svm, n_estimators=num_splits, random_state=1000, n_jobs=-1
     )
-    bagging_classifier.fit(x_train, y_train)
+    bagging_classifier = bagging_classifier.fit(x_train, y_train)
     bagged_score = bagging_classifier.score(x_test, y_test)
 
     for num, sub_estimator in enumerate(bagging_classifier.estimators_):
-        logging.info("Getting scores from subestimator %i for concentration %s", num, window_name)
-        sub_estimator_score = sub_estimator.score(x_test, y_test)
+        logging.info("Getting scores from subestimator %i for window %s", num, window_name)
         sub_estimator_predictions = sub_estimator.predict(x_test)
         sub_estimator_score = sub_estimator.score(x_test, convert_results(y_test))
         _converted_predictions = convert_results(sub_estimator_predictions)
