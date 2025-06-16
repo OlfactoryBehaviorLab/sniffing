@@ -144,14 +144,14 @@ def main():
             _ = process_files([file_path], output_dir)
     else:
         concentration_files = {}
+        animal_dirs = [_dir for _dir in data_dir.iterdir() if _dir.is_dir()]
 
-        for animal_dir in data_dir.iterdir():
-            for concentration_dir in animal_dir.iterdir():
+        for animal_dir in animal_dirs:
+            concentration_dirs = [_dir for _dir in animal_dir.iterdir() if _dir.is_dir()]
 
+            for concentration_dir in concentration_dirs:
                 if concentration_dir.name not in concentration_files:
                     concentration_files[concentration_dir.name] = {}
-
-
 
                 windowed_bin_counts = concentration_dir.joinpath('binned_sniff_counts.xlsx')
                 combined_data_matrix = list(concentration_dir.glob('*TrialParams.xlsx'))[0]
