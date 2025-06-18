@@ -1,7 +1,10 @@
+import os
+
 from dewan_h5 import DewanH5
 from dewan_manual_curation import manual_curation
 from dewan_manual_curation._components import analog_trace
-from .helpers import frequency, preprocessing, output, plotting
+from .helpers import frequency, preprocessing, output, plotting, async_io
+
 import pandas as pd
 import numpy as np
 from scipy import signal
@@ -28,12 +31,13 @@ def process_files(
     ignore_errors=False,
 ):
     h5_stats = pd.DataFrame()
+    tpe = async_io.AsyncIO()
 
     for h5_file_path in tqdm(
         h5_files, total=len(h5_files), desc="Processing H5 Files:"
     ):
         try:
-            print(f"Processing {h5_file_path.name}")
+            # print(f"Processing {h5_file_path.name}")
 
             with DewanH5(h5_file_path, drop_early_lick_trials=True) as h5:
                 _total_original_trials = (h5.total_trials + len(h5.early_lick_trials) + len(h5.short_trials) + len(h5.missing_packet_trials))
@@ -199,26 +203,29 @@ def process_files(
                     POST_ODOR_COUNT_TIME_MS,
                 )
                 h5.export(file_output_dir)
-                binned_sniff_counts_path = file_output_dir.joinpath('binned_sniff_counts.xlsx')
 
+                binned_sniff_counts_path = file_output_dir.joinpath('binned_sniff_counts.xlsx')
                 binned_counts = binned_counts.fillna('X').infer_objects()
-                binned_counts.to_excel(binned_sniff_counts_path)
 
                 all_trimmed_traces = all_trimmed_traces.fillna('X').infer_objects()
                 all_trimmed_traces_path = file_output_dir.joinpath('all_trimmed_traces.xlsx')
-                all_trimmed_traces.to_excel(all_trimmed_traces_path)
+
+                tpe.queue_save_df(binned_counts, binned_sniff_counts_path)
+                tpe.queue_save_df(all_trimmed_traces, all_trimmed_traces_path)
+
 
         except Exception as e:
             import traceback
-
             print(f"Error processing H5 file {h5_file_path}")
             print(traceback.format_exc())
             if not ignore_errors:
+                tpe.shutdown(wait=False)
                 raise e
 
     h5_stats = h5_stats.T
     h5_stats.columns =['ID', 'CONC', 'GOOD', 'EARLY', 'SHORT', 'PACKETS', 'TOTAL', 'PERCENT_LOSS']
     stats_output_path = file_output_dir.parent.joinpath('all_h5_stats.xlsx')
-    h5_stats.to_excel(stats_output_path)
+    tpe.queue_save_df(h5_stats, stats_output_path)
 
+    tpe.shutdown(wait=False)
     return h5_stats
