@@ -27,7 +27,7 @@ class AsyncIO(ThreadPoolExecutor):
 
     def _save_df(self, df_to_save: pd.DataFrame, file_path: os.PathLike) -> None:
         try:
-            df_to_save.to_excel(file_path, index=False)
+            df_to_save.to_excel(file_path)
         except Exception:
             self.logger.error("Unable to save %s", file_path)
         else:

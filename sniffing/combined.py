@@ -10,6 +10,7 @@ from .process_files import PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS
 
 from .helpers import classifiers, async_io
 
+pd.set_option("future.no_silent_downcasting", True)
 logging.basicConfig(level=logging.NOTSET, filename='trial_nums.log', encoding='utf-8')
 
 def animals_to_skip(concentration_files: dict[str, dict]) -> tuple[list, list]:
