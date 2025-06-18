@@ -87,8 +87,8 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     for concentration in all_concentration_labels:
         concentration_df = concentration_dfs[concentration]
 
-        scores, individual_scores, individual_CMS = classifiers.decode_trial_type_single(concentration_df)
-        all_scores.loc[concentration] = scores
+        scores, individual_scores, individual_CMS = classifiers.decode_trial_type_single(concentration_df, concentration)
+        all_scores.loc[concentration] = scores.to_numpy()
         all_individual_scores.loc[concentration] = individual_scores
 
     all_scores_path = output_dir.joinpath('all_scores.xlsx')

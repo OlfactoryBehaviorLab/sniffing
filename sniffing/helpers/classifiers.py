@@ -21,17 +21,15 @@ def _run_svm(
     iter_data: tuple[str, pd.DataFrame],
     test_train_split: float = 0.2,
     num_splits: int = 20,
-) -> tuple[str, float, Iterable[float], Iterable[np.ndarray]]:
+) -> tuple[str, pd.Series, Iterable[float], Iterable[np.ndarray]]:
     individual_scores: list[float] = []
     individual_CMS: list[np.ndarray] = []
 
+    # window_name = int(window_name)
+    # sniff_count_window = pd.DataFrame(sniff_count_window)
+
     window_name, sniff_count_window = iter_data
-    window_name = int(window_name)
-
-    logging.info("Running SVM for %i", window_name)
-
-    sniff_count_window = pd.DataFrame(sniff_count_window)
-
+    logging.info("Running SVM for %s", window_name)
     # sniff_count_window = zscore_data(sniff_count_window)
 
     x_train, x_test, y_train, y_test = train_test_split(
@@ -42,12 +40,12 @@ def _run_svm(
         stratify=sniff_count_window.index
     )
 
-    svm = LinearSVC(dual="auto", random_state=RANDOM_SEED)
+    svm = LinearSVC(dual="auto", random_state=RANDOM_SEED, max_iter=1000,C=.0001)
     bagging_classifier = BaggingClassifier(
         svm, n_estimators=num_splits, random_state=1000, n_jobs=-1
     )
-    bagging_classifier = bagging_classifier.fit(x_train, y_train)
-    bagged_score = bagging_classifier.score(x_test, y_test)
+    bagging_classifier.fit(x_train, y_train)
+    bagged_score = pd.Series(bagging_classifier.score(x_test, y_test), index=[window_name], name="score")
 
     for num, sub_estimator in enumerate(bagging_classifier.estimators_):
         logging.info("Getting scores from subestimator %i for window %s", num, window_name)
@@ -109,23 +107,28 @@ def decode_trial_type(
 
 
 def decode_trial_type_single(
-    windowed_sniff_counts: pd.DataFrame,
+    all_raw_traces: pd.DataFrame,
+    concentration: str,
     test_train_split: float = 0.2,
     num_splits: int = 20
 ) -> tuple[pd.Series, dict[str, pd.DataFrame], dict[str, list[np.ndarray]]]:
 
-    all_scores: pd.Series = pd.Series(index=windowed_sniff_counts.columns)
-    all_individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(windowed_sniff_counts.columns)
-    all_individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(windowed_sniff_counts.columns)
+    # all_scores: pd.Series = pd.Series(index=windowed_sniff_counts.columns)
+    # all_individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(windowed_sniff_counts.columns)
+    # all_individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(windowed_sniff_counts.columns)
 
-    for data in windowed_sniff_counts.items():
-        name, bagged_score, individual_scores, individual_CMS = _run_svm(data,
-                                                                         test_train_split=test_train_split,
-                                                                         num_splits=num_splits)
-        all_scores.loc[name] = bagged_score
-        all_individual_scores[name] = pd.DataFrame(
-            individual_scores, index=np.arange(len(individual_scores))
-        )
-        all_individual_CMS[name] = individual_CMS
+    # for data in windowed_sniff_counts.items():
+    #     name, bagged_score, individual_scores, individual_CMS = _run_svm(data,
+    #                                                                      test_train_split=test_train_split,
+    #                                                                      num_splits=num_splits)
+    #     all_scores.loc[name] = bagged_score
+    #     all_individual_scores[name] = pd.DataFrame(
+    #         individual_scores, index=np.arange(len(individual_scores))
+    #     )
+    #     all_individual_CMS[name] = individual_CMS
+    #
+    # return all_scores, all_individual_scores, all_individual_CMS
 
-    return all_scores, all_individual_scores, all_individual_CMS
+    name, bagged_score, individual_scores, individual_CMS = _run_svm((concentration, all_raw_traces), test_train_split=test_train_split, num_splits=num_splits)
+
+    return bagged_score, individual_scores, individual_CMS
