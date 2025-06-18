@@ -5,6 +5,7 @@ import os
 import logging
 import pandas as pd
 
+
 class AsyncIO(ThreadPoolExecutor):
     def __init__(self, logger: logging.Logger = None, logfile: os.PathLike = None):
         super().__init__()
@@ -23,7 +24,6 @@ class AsyncIO(ThreadPoolExecutor):
 
     def queue_save_df(self, df_to_save: pd.DataFrame, file_path: os.PathLike) -> None:
         self.submit(self._save_df, df_to_save, file_path)
-
 
     def _save_df(self, df_to_save: pd.DataFrame, file_path: os.PathLike) -> None:
         try:

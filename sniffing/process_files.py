@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dewan_h5 import DewanH5
@@ -20,6 +21,8 @@ BIN_STEPS = 50  # ms
 PRE_ODOR_COUNT_TIME_MS = -350
 POST_ODOR_COUNT_TIME_MS = 350
 
+logging.basicConfig(level=logging.NOTSET)
+
 
 def process_files(
     h5_files,
@@ -40,12 +43,28 @@ def process_files(
             # print(f"Processing {h5_file_path.name}")
 
             with DewanH5(h5_file_path, drop_early_lick_trials=True) as h5:
-                _total_original_trials = (h5.total_trials + len(h5.early_lick_trials) + len(h5.short_trials) + len(h5.missing_packet_trials))
-                _perc_loss = round(100 * (_total_original_trials - h5.total_trials) / _total_original_trials, 2)
+                _total_original_trials = (
+                    h5.total_trials
+                    + len(h5.early_lick_trials)
+                    + len(h5.short_trials)
+                    + len(h5.missing_packet_trials)
+                )
+                _perc_loss = round(
+                    100
+                    * (_total_original_trials - h5.total_trials)
+                    / _total_original_trials,
+                    2,
+                )
                 h5_trial_info = pd.Series(
                     (
-                        h5.mouse, h5.concentration, h5.total_trials, len(h5.early_lick_trials), len(h5.short_trials),
-                        len(h5.missing_packet_trials), _total_original_trials, _perc_loss
+                        h5.mouse,
+                        h5.concentration,
+                        h5.total_trials,
+                        len(h5.early_lick_trials),
+                        len(h5.short_trials),
+                        len(h5.missing_packet_trials),
+                        _total_original_trials,
+                        _perc_loss,
                     )
                 )
                 h5_stats = pd.concat((h5_stats, h5_trial_info), axis=1)
@@ -98,14 +117,14 @@ def process_files(
                 all_trimmed_traces = pd.DataFrame()
 
                 for trial_number in tqdm(
-                        filtered_trace_keys,
-                        total=len(filtered_trace_keys),
-                        leave=True,
-                        position=0,
+                    filtered_trace_keys,
+                    total=len(filtered_trace_keys),
+                    leave=True,
+                    position=0,
                 ):
                     filtered_trimmed_trace = filtered_traces[trial_number].loc[
-                                             PRE_FV_TIME:
-                                             ]
+                        PRE_FV_TIME:
+                    ]
                     raw_data = h5.sniff[trial_number].loc[PRE_FV_TIME:]
 
                     # Find inhales/exhales and select true inhales
@@ -154,16 +173,27 @@ def process_files(
                         name=trial_number,
                     )
 
-                    _trimmed_timestamps = np.hstack((pre_odor_sniffs.index.to_numpy(), post_odor_sniffs.index.to_numpy()))
-                    bin_centers, binned_sniff_counts, _ = frequency.oneside_moving_window_counts(
-                        _trimmed_timestamps,
-                        np.array((PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS)),
-                        100,
-                        50
+                    _trimmed_timestamps = np.hstack(
+                        (
+                            pre_odor_sniffs.index.to_numpy(),
+                            post_odor_sniffs.index.to_numpy(),
+                        )
+                    )
+                    bin_centers, binned_sniff_counts, _ = (
+                        frequency.oneside_moving_window_counts(
+                            _trimmed_timestamps,
+                            np.array((PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS)),
+                            100,
+                            50,
+                        )
                     )
 
-                    trial_binned_counts = pd.Series(binned_sniff_counts, index=bin_centers, name=trial_number)
-                    binned_counts = pd.concat((binned_counts, trial_binned_counts), axis=1)
+                    trial_binned_counts = pd.Series(
+                        binned_sniff_counts, index=bin_centers, name=trial_number
+                    )
+                    binned_counts = pd.concat(
+                        (binned_counts, trial_binned_counts), axis=1
+                    )
 
                     inhale_counts = pd.concat((inhale_counts, _counts), axis=1)
 
@@ -191,7 +221,9 @@ def process_files(
                             display_plots,
                         )
                     filtered_trimmed_trace = filtered_trimmed_trace.rename(trial_number)
-                    all_trimmed_traces = pd.concat((all_trimmed_traces, filtered_trimmed_trace), axis=1)
+                    all_trimmed_traces = pd.concat(
+                        (all_trimmed_traces, filtered_trimmed_trace), axis=1
+                    )
 
                 output.repack_data(
                     h5,
@@ -204,18 +236,22 @@ def process_files(
                 )
                 h5.export(file_output_dir)
 
-                binned_sniff_counts_path = file_output_dir.joinpath('binned_sniff_counts.xlsx')
-                binned_counts = binned_counts.fillna('X').infer_objects()
+                binned_sniff_counts_path = file_output_dir.joinpath(
+                    "binned_sniff_counts.xlsx"
+                )
+                binned_counts = binned_counts.fillna("X").infer_objects()
 
-                all_trimmed_traces = all_trimmed_traces.fillna('X').infer_objects()
-                all_trimmed_traces_path = file_output_dir.joinpath('all_trimmed_traces.xlsx')
+                all_trimmed_traces = all_trimmed_traces.fillna("X").infer_objects()
+                all_trimmed_traces_path = file_output_dir.joinpath(
+                    "all_trimmed_traces.xlsx"
+                )
 
                 tpe.queue_save_df(binned_counts, binned_sniff_counts_path)
                 tpe.queue_save_df(all_trimmed_traces, all_trimmed_traces_path)
 
-
         except Exception as e:
             import traceback
+
             print(f"Error processing H5 file {h5_file_path}")
             print(traceback.format_exc())
             if not ignore_errors:
@@ -223,8 +259,17 @@ def process_files(
                 raise e
 
     h5_stats = h5_stats.T
-    h5_stats.columns =['ID', 'CONC', 'GOOD', 'EARLY', 'SHORT', 'PACKETS', 'TOTAL', 'PERCENT_LOSS']
-    stats_output_path = file_output_dir.parent.joinpath('all_h5_stats.xlsx')
+    h5_stats.columns = [
+        "ID",
+        "CONC",
+        "GOOD",
+        "EARLY",
+        "SHORT",
+        "PACKETS",
+        "TOTAL",
+        "PERCENT_LOSS",
+    ]
+    stats_output_path = file_output_dir.parent.joinpath("all_h5_stats.xlsx")
     tpe.queue_save_df(h5_stats, stats_output_path)
 
     tpe.shutdown(wait=False)

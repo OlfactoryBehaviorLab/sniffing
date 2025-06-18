@@ -14,6 +14,8 @@ from pathlib import Path
 DEFAULT_DIR = Path("/mnt/r2d2/5_Projects/Concentration_Sniffing_Dynamics/Raw_Data")
 
 logging.basicConfig(level=logging.NOTSET)
+
+
 def select_dialog(file=False):
     dialog = QFileDialog()
     if file:
@@ -72,11 +74,13 @@ def main():
     #     args.batch = False
 
     if args.single and args.combined:
-        raise argparse.ArgumentError(args.single, 'Cannot run combined processing on a single file! Please specify a data directory!')
+        raise argparse.ArgumentError(
+            args.single,
+            "Cannot run combined processing on a single file! Please specify a data directory!",
+        )
 
     # if args.combined and args.batch:
     #     warnings.warn('Batch processing (-b) is implied for combined processing!', stacklevel=2)
-
 
     # If we specify single, we're only processing one file
     if args.single is not None:
@@ -138,8 +142,12 @@ def main():
             all_h5_stats = pd.DataFrame()
             for animal_dir in animal_dirs:
                 h5_files = list(animal_dir.glob("*.h5"))
-                _animal_h5_stats = process_files(h5_files, output_dir, ignore_errors=args.ignore_errors)
-                all_h5_stats = pd.concat([all_h5_stats, _animal_h5_stats], ignore_index=True)
+                _animal_h5_stats = process_files(
+                    h5_files, output_dir, ignore_errors=args.ignore_errors
+                )
+                all_h5_stats = pd.concat(
+                    [all_h5_stats, _animal_h5_stats], ignore_index=True
+                )
             h5_stats_output_path = output_dir.joinpath("all_h5_stats.xlsx")
             all_h5_stats.to_excel(h5_stats_output_path)
         elif file_path:
@@ -149,19 +157,25 @@ def main():
         animal_dirs = [_dir for _dir in data_dir.iterdir() if _dir.is_dir()]
 
         for animal_dir in animal_dirs:
-            concentration_dirs = [_dir for _dir in animal_dir.iterdir() if _dir.is_dir()]
+            concentration_dirs = [
+                _dir for _dir in animal_dir.iterdir() if _dir.is_dir()
+            ]
 
             for concentration_dir in concentration_dirs:
                 if concentration_dir.name not in concentration_files:
                     concentration_files[concentration_dir.name] = {}
 
-                windowed_bin_counts = concentration_dir.joinpath('binned_sniff_counts.xlsx')
-                combined_data_matrix = list(concentration_dir.glob('*TrialParams.xlsx'))[0]
-                all_traces = list(concentration_dir.glob('all_trimmed_traces.xlsx'))[0]
+                windowed_bin_counts = concentration_dir.joinpath(
+                    "binned_sniff_counts.xlsx"
+                )
+                combined_data_matrix = list(
+                    concentration_dir.glob("*TrialParams.xlsx")
+                )[0]
+                all_traces = list(concentration_dir.glob("all_trimmed_traces.xlsx"))[0]
                 concentration_files[concentration_dir.name][animal_dir.name] = {
-                    'combined': combined_data_matrix,
-                    'window': windowed_bin_counts,
-                    'traces': all_traces
+                    "combined": combined_data_matrix,
+                    "window": windowed_bin_counts,
+                    "traces": all_traces,
                 }
 
         process_combined(concentration_files, output_dir)

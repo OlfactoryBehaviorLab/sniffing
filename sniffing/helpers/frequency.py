@@ -94,7 +94,7 @@ def oneside_moving_window_counts(
     start_bins = np.arange(trial_timestamps[0], trial_timestamps[-1], window_step_ms)
     end_bins = start_bins + window_size_ms
     good_bin_indices = np.where(end_bins <= trial_timestamps[-1])[0]
-    window_bins = np.array(list(zip(start_bins, end_bins)))[good_bin_indices] # noqa: B905
+    window_bins = np.array(list(zip(start_bins, end_bins)))[good_bin_indices]  # noqa: B905
     bin_centers = np.zeros(window_bins.shape[0])
     counts = np.zeros(window_bins.shape[0])
     frequencies = np.zeros(window_bins.shape[0])

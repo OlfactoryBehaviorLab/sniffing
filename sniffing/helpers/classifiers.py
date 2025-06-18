@@ -17,6 +17,7 @@ RANDOM_SEED = 1749483131
 
 logging.basicConfig(level=logging.NOTSET)
 
+
 def _run_svm(
     iter_data: tuple[str, pd.DataFrame],
     test_train_split: float = 0.2,
@@ -37,18 +38,22 @@ def _run_svm(
         sniff_count_window.index,
         test_size=test_train_split,
         random_state=RANDOM_SEED,
-        stratify=sniff_count_window.index
+        stratify=sniff_count_window.index,
     )
 
-    svm = LinearSVC(dual="auto", random_state=RANDOM_SEED, max_iter=1000,C=.0001)
+    svm = LinearSVC(dual="auto", random_state=RANDOM_SEED, max_iter=1000, C=0.0001)
     bagging_classifier = BaggingClassifier(
         svm, n_estimators=num_splits, random_state=1000, n_jobs=-1
     )
     bagging_classifier.fit(x_train, y_train)
-    bagged_score = pd.Series(bagging_classifier.score(x_test, y_test), index=[window_name], name="score")
+    bagged_score = pd.Series(
+        bagging_classifier.score(x_test, y_test), index=[window_name], name="score"
+    )
 
     for num, sub_estimator in enumerate(bagging_classifier.estimators_):
-        logging.info("Getting scores from subestimator %i for window %s", num, window_name)
+        logging.info(
+            "Getting scores from subestimator %i for window %s", num, window_name
+        )
         sub_estimator_predictions = sub_estimator.predict(x_test)
         sub_estimator_score = sub_estimator.score(x_test, convert_results(y_test))
         _converted_predictions = convert_results(sub_estimator_predictions)
@@ -59,25 +64,30 @@ def _run_svm(
 
     return window_name, bagged_score, individual_scores, individual_CMS
 
+
 def convert_results(predictions: np.ndarray):
     converted_results = []
 
     for prediction in predictions:
-            if prediction == 0:
-                converted_results.append('go')
-            elif prediction == 1:
-                converted_results.append('nogo')
-            elif prediction == 'go':
-                converted_results.append(0)
-            elif prediction == 'nogo':
-                converted_results.append(1)
+        if prediction == 0:
+            converted_results.append("go")
+        elif prediction == 1:
+            converted_results.append("nogo")
+        elif prediction == "go":
+            converted_results.append(0)
+        elif prediction == "nogo":
+            converted_results.append(1)
 
     return np.array(converted_results)
 
 
 def zscore_data(windowed_sniff_counts: pd.DataFrame) -> pd.DataFrame:
     transformed_data = StandardScaler().fit_transform(windowed_sniff_counts)
-    return pd.DataFrame(transformed_data, index = windowed_sniff_counts.index, columns=windowed_sniff_counts.columns)
+    return pd.DataFrame(
+        transformed_data,
+        index=windowed_sniff_counts.index,
+        columns=windowed_sniff_counts.columns,
+    )
 
 
 def decode_trial_type(
@@ -85,12 +95,17 @@ def decode_trial_type(
     test_train_split: float = 0.2,
     num_splits: int = 20,
 ):
-
     all_scores: pd.Series = pd.Series(index=windowed_sniff_counts.columns)
-    all_individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(windowed_sniff_counts.columns)
-    all_individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(windowed_sniff_counts.columns)
+    all_individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(
+        windowed_sniff_counts.columns
+    )
+    all_individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(
+        windowed_sniff_counts.columns
+    )
 
-    partial_function = partial(_run_svm, test_train_split=test_train_split, num_splits=num_splits)
+    partial_function = partial(
+        _run_svm, test_train_split=test_train_split, num_splits=num_splits
+    )
 
     with ProcessPoolExecutor() as ppe:
         for name, bagged_score, individual_scores, individual_CMS in ppe.map(
@@ -110,9 +125,8 @@ def decode_trial_type_single(
     all_raw_traces: pd.DataFrame,
     concentration: str,
     test_train_split: float = 0.2,
-    num_splits: int = 20
+    num_splits: int = 20,
 ) -> tuple[pd.Series, dict[str, pd.DataFrame], dict[str, list[np.ndarray]]]:
-
     # all_scores: pd.Series = pd.Series(index=windowed_sniff_counts.columns)
     # all_individual_scores: dict[str, pd.DataFrame] = dict.fromkeys(windowed_sniff_counts.columns)
     # all_individual_CMS: dict[str, list[np.ndarray]] = dict.fromkeys(windowed_sniff_counts.columns)
@@ -129,6 +143,10 @@ def decode_trial_type_single(
     #
     # return all_scores, all_individual_scores, all_individual_CMS
 
-    name, bagged_score, individual_scores, individual_CMS = _run_svm((concentration, all_raw_traces), test_train_split=test_train_split, num_splits=num_splits)
+    name, bagged_score, individual_scores, individual_CMS = _run_svm(
+        (concentration, all_raw_traces),
+        test_train_split=test_train_split,
+        num_splits=num_splits,
+    )
 
     return bagged_score, individual_scores, individual_CMS
