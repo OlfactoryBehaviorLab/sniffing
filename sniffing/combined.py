@@ -58,8 +58,17 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
             go_trial_traces = all_trimmed_traces.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, go_trials]
             nogo_trial_traces = all_trimmed_traces.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, nogo_trials]
 
-            all_go_trial_traces = pd.concat((all_go_trial_traces, go_trial_traces), axis=1)
-            all_nogo_trial_traces = pd.concat((all_nogo_trial_traces, nogo_trial_traces), axis=1)
+            go_trial_traces = go_trial_traces.replace("X", np.nan).infer_objects(copy=False)
+            nogo_trial_traces = nogo_trial_traces.replace("X", np.nan).infer_objects(copy=False)
+            go_trial_traces = go_trial_traces.dropna(axis=1).infer_objects(copy=False)
+            nogo_trial_traces = nogo_trial_traces.dropna(axis=1).infer_objects(copy=False)
+
+            zscore_go_trial_traces = classifiers.zscore_data(go_trial_traces)
+            zscore_nogo_trial_traces = classifiers.zscore_data(nogo_trial_traces)
+
+            all_go_trial_traces = pd.concat((all_go_trial_traces, zscore_go_trial_traces), axis=1)
+            all_nogo_trial_traces = pd.concat((all_nogo_trial_traces, zscore_nogo_trial_traces), axis=1)
+
 
         # Do combined analysis here
 
@@ -72,30 +81,20 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
 
 
     all_concentration_labels = list(concentration_dfs.keys())
-    # scores, individual_scores, individual_CMS = classifiers.decode_trial_type(concentration_dfs[all_concentration_labels[0]])
-    _cols = concentration_dfs[all_concentration_labels[0]].columns
-    all_scores = pd.DataFrame(index=all_concentration_labels, columns=_cols)
-    all_variance = pd.DataFrame(index=all_concentration_labels, columns=_cols)
-    all_means = pd.DataFrame(index=all_concentration_labels, columns=_cols)
 
+    all_scores = pd.DataFrame(index=all_concentration_labels, columns=["score"])
+    all_individual_scores = pd.DataFrame(index=all_concentration_labels, columns=[np.arange(0,20)])
     for concentration in all_concentration_labels:
         concentration_df = concentration_dfs[concentration]
-        all_variance.loc[concentration] = concentration_df.var()
-        all_means.loc[concentration] = concentration_df.mean()
 
         scores, individual_scores, individual_CMS = classifiers.decode_trial_type_single(concentration_df)
         all_scores.loc[concentration] = scores
+        all_individual_scores.loc[concentration] = individual_scores
 
     all_scores_path = output_dir.joinpath('all_scores.xlsx')
-    all_variance_path = output_dir.joinpath('all_variance.xlsx')
-    all_means_path = output_dir.joinpath('all_means.xlsx')
-
-    # all_scores.to_excel(all_scores_path)
-    # all_variance.to_excel(all_variance_path)
-    # all_means.to_excel(all_means_path)
+    all_individual_scores_path = output_dir.joinpath('all_individual_scores.xlsx')
 
     tpe.queue_save_df(all_scores, all_scores_path)
-    tpe.queue_save_df(all_variance, all_variance_path)
-    tpe.queue_save_df(all_means, all_means_path)
+    tpe.queue_save_df(all_individual_scores, all_individual_scores_path)
 
     tpe.shutdown(wait=True)
