@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 
 from .process_files import PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS
 
-from .helpers import classifiers
+from .helpers import classifiers, async_io
 
 logging.basicConfig(level=logging.NOTSET, filename='trial_nums.log', encoding='utf-8')
 
@@ -27,6 +27,7 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     warn(f'{bad_animals} are missing some concentrations and will be skipped!', stacklevel=2)
 
     concentration_dfs = {}
+    tpe = async_io.AsyncIO()
 
     for concentration in tqdm(concentration_files, desc="Processing concentrations: ", total=len(concentration_files),
                               leave=True, position=1):
@@ -88,6 +89,12 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     all_variance_path = output_dir.joinpath('all_variance.xlsx')
     all_means_path = output_dir.joinpath('all_means.xlsx')
 
-    all_scores.to_excel(all_scores_path)
-    all_variance.to_excel(all_variance_path)
-    all_means.to_excel(all_means_path)
+    # all_scores.to_excel(all_scores_path)
+    # all_variance.to_excel(all_variance_path)
+    # all_means.to_excel(all_means_path)
+
+    tpe.queue_save_df(all_scores, all_scores_path)
+    tpe.queue_save_df(all_variance, all_variance_path)
+    tpe.queue_save_df(all_means, all_means_path)
+
+    tpe.shutdown(wait=True)
