@@ -157,9 +157,11 @@ def main():
 
                 windowed_bin_counts = concentration_dir.joinpath('binned_sniff_counts.xlsx')
                 combined_data_matrix = list(concentration_dir.glob('*TrialParams.xlsx'))[0]
+                all_traces = list(concentration_dir.glob('all_trimmed_traces.xlsx'))[0]
                 concentration_files[concentration_dir.name][animal_dir.name] = {
                     'combined': combined_data_matrix,
                     'window': windowed_bin_counts,
+                    'traces': all_traces
                 }
 
         process_combined(concentration_files, output_dir)

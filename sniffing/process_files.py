@@ -187,7 +187,7 @@ def process_files(
                             display_plots,
                         )
                     filtered_trimmed_trace = filtered_trimmed_trace.rename(trial_number)
-                    all_trimmed_traces = pd.concat((all_trimmed_traces, filtered_trimmed_trace), axis=0) 
+                    all_trimmed_traces = pd.concat((all_trimmed_traces, filtered_trimmed_trace), axis=1)
 
                 output.repack_data(
                     h5,

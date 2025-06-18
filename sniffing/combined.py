@@ -30,8 +30,8 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
 
     for concentration in tqdm(concentration_files, desc="Processing concentrations: ", total=len(concentration_files),
                               leave=True, position=1):
-        all_go_trials = pd.DataFrame()
-        all_nogo_trials = pd.DataFrame()
+        all_go_trial_traces = pd.DataFrame()
+        all_nogo_trial_traces = pd.DataFrame()
 
         animal_files = concentration_files[concentration]
 
@@ -39,6 +39,7 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
         for animal in animal_files:
             animal_data_matrix = pd.read_excel(animal_files[animal]['combined'], index_col=[0])
             windowed_bin_counts = pd.read_excel(animal_files[animal]['window'], index_col=[0])
+            all_trimmed_traces = pd.read_excel(animal_files[animal]['traces'], index_col=[0])
 
             good_trials = windowed_bin_counts.columns
 
@@ -49,20 +50,23 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
             go_trials = np.intersect1d(good_trials, go_trials)
             nogo_trials = np.intersect1d(good_trials, nogo_trials)
 
-            go_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, go_trials]
-            nogo_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, nogo_trials]
+            #go_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, go_trials]
+            #nogo_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, nogo_trials]
 
-            all_go_trials = pd.concat((all_go_trials, go_trial_counts), axis=1)
-            all_nogo_trials = pd.concat((all_nogo_trials, nogo_trial_counts), axis=1)
+            go_trial_traces = all_trimmed_traces.loc[go_trials, PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS]
+            nogo_trial_traces = all_trimmed_traces.loc[nogo_trials, PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS]
+
+            all_go_trial_traces = pd.concat((all_go_trial_traces, go_trial_traces), axis=1)
+            all_nogo_trial_traces = pd.concat((all_nogo_trial_traces, nogo_trial_traces), axis=1)
 
         # Do combined analysis here
 
-        all_go_trials.columns = np.repeat('go', all_go_trials.shape[1])
-        all_nogo_trials.columns = np.repeat('nogo', all_nogo_trials.shape[1])
+        all_go_trial_traces.index = np.repeat('go', all_go_trial_traces.shape[1])
+        all_nogo_trial_traces.index = np.repeat('nogo', all_nogo_trial_traces.shape[1])
 
-        all_concentration_trials = pd.concat([all_go_trials, all_nogo_trials], axis=1)
-        concentration_dfs[concentration] = all_concentration_trials.T
-        logging.info("Concentration %s has %i go trials and %i nogo trials", concentration, all_go_trials.shape[1], all_nogo_trials.shape[1])
+        all_concentration_trials = pd.concat([all_go_trial_traces, all_nogo_trial_traces], axis=1)
+        # concentration_dfs[concentration] = all_concentration_trials.T
+        logging.info("Concentration %s has %i go trials and %i nogo trials", concentration, all_go_trial_traces.shape[1], all_nogo_trials.shape[1])
 
 
     all_concentration_labels = list(concentration_dfs.keys())
