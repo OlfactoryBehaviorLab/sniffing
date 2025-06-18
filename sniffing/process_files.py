@@ -91,6 +91,8 @@ def process_files(
                         gui_sniff_traces, filtered_trace_keys
                     )
 
+                all_trimmed_traces = pd.DataFrame()
+
                 for trial_number in tqdm(
                         filtered_trace_keys,
                         total=len(filtered_trace_keys),
@@ -185,12 +187,7 @@ def process_files(
                             display_plots,
                         )
 
-                # go_trial_counts.to_excel(file_output_dir.joinpath('go_trial_counts.xlsx'))
-                # false_alarm_counts.to_excel(file_output_dir.joinpath('false_alarm_counts.xlsx'))
-                # correct_rejection_counts.to_excel(file_output_dir.joinpath('correct_rejection_counts.xlsx'))
-                # missed_counts.to_excel(file_output_dir.joinpath('missed_counts.xlsx'))
-                # inhalation_durations.to_excel(file_output_dir.joinpath('inhalation_durations.xlsx'))
-                # fig.savefig(file_output_dir.joinpath(f'binned_frequency_hist.pdf'))
+                    all_trimmed_traces = pd.concat((all_trimmed_traces, filtered_trimmed_trace), axis=0) 
 
                 output.repack_data(
                     h5,
@@ -206,6 +203,10 @@ def process_files(
 
                 binned_counts = binned_counts.fillna('X').infer_objects()
                 binned_counts.to_excel(binned_sniff_counts_path)
+
+                all_trimmed_traces = all_trimmed_traces.fillna('X').infer_objects()
+                all_trimmed_traces_path = file_output_dir.joinpath('all_trimmed_traces.xlsx')
+                all_trimmed_traces.to_excel(all_trimmed_traces_path)
 
         except Exception as e:
             import traceback
