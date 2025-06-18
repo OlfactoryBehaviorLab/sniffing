@@ -121,6 +121,13 @@ def decode_trial_type(
     return all_scores, all_individual_scores, all_individual_CMS
 
 
+def shuffle_labels(df: pd.DataFrame) -> pd.DataFrame:
+    rng = np.random.default_rng(seed=RANDOM_SEED)
+    shuffled_labels = rng.permutation(df.index)
+    df.index = shuffled_labels
+    return df
+
+
 def decode_trial_type_single(
     all_raw_traces: pd.DataFrame,
     concentration: str,

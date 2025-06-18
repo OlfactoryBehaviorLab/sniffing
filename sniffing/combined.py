@@ -119,7 +119,7 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
 
     all_concentration_labels = list(concentration_dfs.keys())
 
-    all_scores = pd.DataFrame(index=all_concentration_labels, columns=["score"])
+    all_scores = pd.DataFrame(index=all_concentration_labels, columns=["score", "shuffle_score"])
     all_individual_scores = pd.DataFrame(
         index=all_concentration_labels, columns=[np.arange(0, 20)]
     )
@@ -129,7 +129,12 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
         scores, individual_scores, individual_CMS = (
             classifiers.decode_trial_type_single(concentration_df, concentration)
         )
-        all_scores.loc[concentration] = scores.to_numpy()
+
+        shuffled_concentration_df = classifiers.shuffle_labels(concentration_df)
+
+        shuffled_scores, shuffled_individual_scores, shuffled_individual_CMS = (
+            classifiers.decode_trial_type_single(shuffled_concentration_df, concentration)
+        )
         all_individual_scores.loc[concentration] = individual_scores
 
     all_scores_path = output_dir.joinpath("all_scores.xlsx")
