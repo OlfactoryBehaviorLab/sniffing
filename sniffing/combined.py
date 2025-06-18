@@ -135,7 +135,10 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
         shuffled_scores, shuffled_individual_scores, shuffled_individual_CMS = (
             classifiers.decode_trial_type_single(shuffled_concentration_df, concentration)
         )
+
+        all_scores.loc[concentration] = scores.to_numpy().round(3)
         all_individual_scores.loc[concentration] = individual_scores
+        all_scores.loc[concentration, "shuffle_score"] = shuffled_scores.to_numpy().round(3)
 
     all_scores_path = output_dir.joinpath("all_scores.xlsx")
     all_individual_scores_path = output_dir.joinpath("all_individual_scores.xlsx")
