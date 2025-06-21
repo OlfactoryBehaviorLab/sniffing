@@ -27,6 +27,18 @@ COLUMNS = [
     "post_sniff_dur_3",
 ]
 
+SPSS_COLUMNS = [
+    "ID",
+    "odor",
+    "concentration",
+    "type",
+    "result",
+    "sniff_count",
+    "duration_1",
+    "duration_2",
+    "duration_3",
+]
+
 TRIAL_TYPE = {1: "GO", 2: "NOGO"}
 
 
@@ -50,14 +62,27 @@ def repack_data(
     trial_type = trial_type.replace(TRIAL_TYPE)
 
     combined_df = pd.DataFrame(index=trials, columns=COLUMNS)
+
+    spss_indices = np.hstack((np.repeat('pre', len(trials)), np.repeat('post', len(trials))))
+
+    combined_spss_df = pd.DataFrame(index=spss_indices, columns=SPSS_COLUMNS)
+
     combined_df.loc[:, "ID"] = animal_ID
     combined_df.loc[:, "odor"] = odor
     combined_df.loc[:, "conc"] = concentration
     combined_df.loc[:, "type"] = trial_type
     combined_df.loc[:, "result"] = trial_results
-    # inhale_counts.index = ['pre_odor_sniffs', 'post_odor_sniffs']
+
+    combined_spss_df.loc[:, "ID"] = animal_ID
+    combined_spss_df.loc[:, "odor"] = odor
+    combined_spss_df.loc[:, "conc"] = concentration
+    combined_spss_df.loc[:, "type"] = trial_type
+    combined_spss_df.loc[:, "result"] = trial_results
 
     inhale_counts.index = ["pre_odor_sniffs", "post_odor_sniffs"]
+    combined_spss_df.loc["pre", "sniff_count"] = inhale_counts.loc["pre_odor_sniffs"]
+    combined_spss_df.loc["post", "sniff_count"] = inhale_counts.loc["post_odor_sniffs"]
+
     inhale_latencies.index = ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]
 
     combined_df.loc[:, ["pre_odor_sniffs", "post_odor_sniffs"]] = inhale_counts.T
@@ -70,16 +95,24 @@ def repack_data(
     combined_df.loc[:, ["pre_sniff_dur_3", "pre_sniff_dur_2", "pre_sniff_dur_1"]] = (
         pre_fv_inhalation_durations
     )
+
+    combined_spss_df.loc["pre", ["duration_1", "duration_2", "duration_3"]] = pre_fv_inhalation_durations[::-1]
+
     combined_df.loc[:, ["post_sniff_dur_1", "post_sniff_dur_2", "post_sniff_dur_3"]] = (
         post_fv_inhalation_durations
     )
+    combined_spss_df.loc["post", ["duration_1", "duration_2", "duration_3"]] = post_fv_inhalation_durations[::-1]
 
     filename = f"{animal_ID}-{concentration}-combined.xlsx"
+    filename_spss = f"{animal_ID}-{concentration}-spss.xlsx"
     output_path = output_dir.joinpath(filename)
+    output_path_spss = output_dir.joinpath(filename_spss)
 
     combined_df = combined_df.infer_objects().fillna("X")
+    combined_spss_df = combined_spss_df.infer_objects().fillna("X")
 
     combined_df.to_excel(output_path)
+    combined_spss_df.to_excel(output_path_spss)
 
 
 def unpack_inhale_durations(
