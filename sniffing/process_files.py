@@ -278,5 +278,5 @@ def process_files(
     stats_output_path = file_output_dir.parent.joinpath("all_h5_stats.xlsx")
     tpe.queue_save_df(h5_stats, stats_output_path)
 
-    tpe.shutdown(wait=False)
+    tpe.shutdown(wait=True)
     return h5_stats
