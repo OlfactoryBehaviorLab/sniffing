@@ -4,10 +4,12 @@ import os
 from dewan_h5 import DewanH5
 from dewan_manual_curation import manual_curation
 from dewan_manual_curation._components import analog_trace
-from .helpers import frequency, preprocessing, output, plotting, async_io
+from dewan_utils import async_io
+from .helpers import frequency, preprocessing, output, plotting
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy import signal
 from tqdm.auto import tqdm
 
@@ -22,19 +24,20 @@ PRE_ODOR_COUNT_TIME_MS = -350
 POST_ODOR_COUNT_TIME_MS = 350
 
 logging.basicConfig(level=logging.NOTSET)
-
+plt.set_loglevel(level = 'warning')
 
 def process_files(
     h5_files,
     output_dir,
     run_manual_curation=False,
     filtered_manual_curation=True,
-    plot_figs=False,
+    plot_figs=True,
     display_plots=False,
     ignore_errors=False,
 ):
+    logger = logging.getLogger(__name__)
     h5_stats = pd.DataFrame()
-    tpe = async_io.AsyncIO()
+    tpe = async_io.AsyncIO(logger=logger)
 
     for h5_file_path in tqdm(
         h5_files, total=len(h5_files), desc="Processing H5 Files:"
@@ -210,16 +213,19 @@ def process_files(
                     plot_output_dir = file_output_dir.joinpath("figures")
                     plot_output_dir.mkdir(exist_ok=True, parents=True)
                     if plot_figs:
-                        plotting.plot_traces(
+                        fig, path = plotting.plot_traces(
                             raw_data,
                             filtered_trimmed_trace,
+                            h5.lick1[trial_number],
                             true_inhales,
                             inhales,
                             exhales,
                             trial_number,
                             plot_output_dir,
                             display_plots,
+                            tpe=True
                         )
+                        tpe.queue_save_plot(fig, path, logger)
                     filtered_trimmed_trace = filtered_trimmed_trace.rename(trial_number)
                     all_trimmed_traces = pd.concat(
                         (all_trimmed_traces, filtered_trimmed_trace), axis=1
