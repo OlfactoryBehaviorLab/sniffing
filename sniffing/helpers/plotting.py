@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pandas import Series
 
-
 def plot_multi_traces(traces: list[Series], trial_name) -> None:
     """
     Plots multiple traces in individual rows. Useful for visualizing raw v. preprocessed traces
@@ -120,12 +119,14 @@ def plot_true_sniffs(
 def plot_traces(
     raw_trace,
     filtered_trace,
+    lick_timestamps,
     true_inhales,
     all_inhales,
     all_exhales,
     trial_number,
     output_dir=None,
     display=False,
+    tpe: bool = False,
 ):
     fig, axs = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
     plt.suptitle(
@@ -149,6 +150,10 @@ def plot_traces(
     _ = axs[1].scatter(
         true_inhales.index, true_inhales, marker="*", color="m", label="true_inhale"
     )
+
+    max_y = max(filtered_trace)
+    _ = axs[1].vlines(x=lick_timestamps, ymin=max_y*0.9, ymax=max_y, color='r')
+
     fig.legend(loc=2, fontsize=12)
     plt.tight_layout()
 
@@ -157,8 +162,13 @@ def plot_traces(
 
     if output_dir is not None:
         output_path = output_dir.joinpath(f"trial_{trial_number}.pdf")
+        if tpe:
+            return fig, output_path
+
         fig.savefig(output_path, dpi=600)
         plt.close()
+
+    return None, None
 
 
 def plot_binned_frequencies(
