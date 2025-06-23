@@ -152,7 +152,9 @@ def plot_traces(
     )
 
     max_y = max(filtered_trace)
-    _ = axs[1].vlines(x=lick_timestamps, ymin=max_y*0.9, ymax=max_y, color='r')
+    _trimmed_lick_timestamps = np.intersect1d(filtered_trace.index, lick_timestamps)
+    # Don't plot any licks after the sniff data is done
+    _ = axs[1].vlines(x=_trimmed_lick_timestamps, ymin=max_y*0.9, ymax=max_y, color='r')
 
     fig.legend(loc=2, fontsize=12)
     plt.tight_layout()
