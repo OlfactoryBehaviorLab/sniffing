@@ -45,12 +45,13 @@ def process_files(
         try:
             # print(f"Processing {h5_file_path.name}")
 
-            with DewanH5(h5_file_path, drop_early_lick_trials=True) as h5:
+            with DewanH5(h5_file_path, drop_early_lick_trials=False, drop_cheating_trials=True) as h5:
                 _total_original_trials = (
                     h5.total_trials
                     + len(h5.early_lick_trials)
                     + len(h5.short_trials)
                     + len(h5.missing_packet_trials)
+                    + len(h5.cheat_check_trials)
                 )
                 _perc_loss = round(
                     100
@@ -66,6 +67,7 @@ def process_files(
                         len(h5.early_lick_trials),
                         len(h5.short_trials),
                         len(h5.missing_packet_trials),
+                        len(h5.cheat_check_trials),
                         _total_original_trials,
                         _perc_loss,
                     )
@@ -272,6 +274,7 @@ def process_files(
         "EARLY",
         "SHORT",
         "PACKETS",
+        "CHEATCHK",
         "TOTAL",
         "PERCENT_LOSS",
     ]
