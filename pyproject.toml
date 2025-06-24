@@ -19,7 +19,7 @@ dependencies = [
     "numpy",
     "pandas",
     "scipy",
-    "dewan_h5>=1.2.0",
+    "dewan_h5>=1.2.3",
     "tqdm",
     "numba",
     "dewan-manual-curation",
