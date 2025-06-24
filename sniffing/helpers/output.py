@@ -27,20 +27,38 @@ COLUMNS = [
     "post_sniff_dur_3",
 ]
 
-SPSS_COLUMNS = [
-    "ID",
-    "odor",
-    "concentration",
-    "type",
-    "result",
-    "sniff_count",
-    "duration_1",
-    "duration_2",
-    "duration_3",
+SUMMARY_COLUMN = [
+    'TOTAL_PRE_SNIFFS',
+    'TOTAL_POST_SNIFFS',
+    'TOTAL_PRE_GO_SNIFFS',
+    'TOTAL_PRE_NOGO_SNIFFS',
+    'TOTAL_POST_GO_SNIFFS',
+    'TOTAL_POST_NOGO_SNIFFS',
+
+    'AVG_LATENCY_1',
+    'AVG_LATENCY_2',
+    'AVG_LATENCY_3',
+    'AVG_GO_LATENCY_1',
+    'AVG_GO_LATENCY_2',
+    'AVG_GO_LATENCY_3',
+    'AVG_NOGO_LATENCY_1',
+    'AVG_NOGO_LATENCY_2',
+    'AVG_NOGO_LATENCY_3',
+
+    'AVG_PRE_GO_SNIFF_DUR_1',
+    'AVG_PRE_GO_SNIFF_DUR_2',
+    'AVG_PRE_GO_SNIFF_DUR_3',
+    'AVG_PRE_NOGO_SNIFF_DUR_1',
+    'AVG_PRE_NOGO_SNIFF_DUR_2',
+    'AVG_PRE_NOGO_SNIFF_DUR_3',
+
+    'AVG_POST_GO_SNIFF_DUR_1',
+    'AVG_POST_GO_SNIFF_DUR_2',
+    'AVG_POST_GO_SNIFF_DUR_3',
+    'AVG_POST_NOGO_SNIFF_DUR_1',
+    'AVG_POST_NOGO_SNIFF_DUR_2',
+    'AVG_POST_NOGO_SNIFF_DUR_3',
 ]
-
-TRIAL_TYPE = {1: "GO", 2: "NOGO"}
-
 
 def repack_data(
     h5_file: DewanH5,
@@ -59,13 +77,8 @@ def repack_data(
 
     trial_type = h5_file.trial_parameters.loc[trials, "trial_type"]
     trial_results = h5_file.trial_parameters.loc[trials, "result"]
-    trial_type = trial_type.replace(TRIAL_TYPE)
 
     combined_df = pd.DataFrame(index=trials, columns=COLUMNS)
-
-    spss_indices = np.hstack((np.repeat('pre', len(trials)), np.repeat('post', len(trials))))
-
-    combined_spss_df = pd.DataFrame(index=spss_indices, columns=SPSS_COLUMNS)
 
     combined_df.loc[:, "ID"] = animal_ID
     combined_df.loc[:, "odor"] = odor
@@ -73,15 +86,7 @@ def repack_data(
     combined_df.loc[:, "type"] = trial_type
     combined_df.loc[:, "result"] = trial_results
 
-    combined_spss_df.loc[:, "ID"] = animal_ID
-    combined_spss_df.loc[:, "odor"] = odor
-    combined_spss_df.loc[:, "conc"] = concentration
-    combined_spss_df.loc[:, "type"] = trial_type
-    combined_spss_df.loc[:, "result"] = trial_results
-
     inhale_counts.index = ["pre_odor_sniffs", "post_odor_sniffs"]
-    combined_spss_df.loc["pre", "sniff_count"] = inhale_counts.loc["pre_odor_sniffs"]
-    combined_spss_df.loc["post", "sniff_count"] = inhale_counts.loc["post_odor_sniffs"]
 
     inhale_latencies.index = ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]
 
@@ -96,12 +101,11 @@ def repack_data(
         pre_fv_inhalation_durations
     )
 
-    combined_spss_df.loc["pre", ["duration_1", "duration_2", "duration_3"]] = pre_fv_inhalation_durations[::-1]
-
     combined_df.loc[:, ["post_sniff_dur_1", "post_sniff_dur_2", "post_sniff_dur_3"]] = (
         post_fv_inhalation_durations
     )
-    combined_spss_df.loc["post", ["duration_1", "duration_2", "duration_3"]] = post_fv_inhalation_durations[::-1]
+
+
 
     filename = f"{animal_ID}-{concentration}-combined.xlsx"
     filename_spss = f"{animal_ID}-{concentration}-spss.xlsx"
@@ -109,10 +113,8 @@ def repack_data(
     output_path_spss = output_dir.joinpath(filename_spss)
 
     combined_df = combined_df.infer_objects().fillna("X")
-    combined_spss_df = combined_spss_df.infer_objects().fillna("X")
 
     combined_df.to_excel(output_path)
-    combined_spss_df.to_excel(output_path_spss)
 
 
 def unpack_inhale_durations(
@@ -188,3 +190,45 @@ def _get_post_fv_inhales(trial_df: pd.DataFrame, POST_ODOR_COUNT_TIME_MS):  # no
     )
 
     return post_fv_durations
+
+
+def calculate_summary_stats(combined_df: pd.DataFrame) -> pd.DataFrame:
+    go_trials_mask = combined_df['type'] == 1
+    nogo_trials_mask = combined_df['type'] == 0
+
+    summary_stats = pd.DataFrame(index=SUMMARY_COLUMN, columns=['Stat'])
+
+    summary_stats.loc['TOTAL_PRE_SNIFFS'] = combined_df['pre_odor_sniffs'].sum()
+    summary_stats.loc['TOTAL_POST_SNIFFS'] = combined_df['post_odor_sniffs'].sum()
+    summary_stats.loc['TOTAL_PRE_GO_SNIFFS'] = combined_df.loc[go_trials_mask, 'pre_odor_sniffs'].sum()
+    summary_stats.loc['TOTAL_PRE_NOGO_SNIFFS'] = combined_df.loc[nogo_trials_mask, 'pre_odor_sniffs'].sum()
+    summary_stats.loc['TOTAL_POST_GO_SNIFFS'] = combined_df.loc[go_trials_mask, 'post_odor_sniffs'].sum()
+    summary_stats.loc['TOTAL_POST_NOGO_SNIFFS'] = combined_df.loc[nogo_trials_mask, 'post_odor_sniffs'].sum()
+
+    summary_stats.loc['AVG_LATENCY_1'] = combined_df['sniff_1_latency'].mean()
+    summary_stats.loc['AVG_LATENCY_2'] = combined_df['sniff_2_latency'].mean()
+    summary_stats.loc['AVG_LATENCY_3'] = combined_df['sniff_3_latency'].mean()
+    summary_stats.loc['AVG_GO_LATENCY_1'] = combined_df.loc[go_trials_mask, 'sniff_1_latency'].mean()
+    summary_stats.loc['AVG_GO_LATENCY_2'] = combined_df.loc[go_trials_mask, 'sniff_2_latency'].mean()
+    summary_stats.loc['AVG_GO_LATENCY_3'] = combined_df.loc[go_trials_mask, 'sniff_3_latency'].mean()
+    summary_stats.loc['AVG_NOGO_LATENCY_1'] = combined_df.loc[nogo_trials_mask, 'sniff_1_latency'].mean()
+    summary_stats.loc['AVG_NOGO_LATENCY_2'] = combined_df.loc[nogo_trials_mask, 'sniff_2_latency'].mean()
+    summary_stats.loc['AVG_NOGO_LATENCY_3'] = combined_df.loc[nogo_trials_mask, 'sniff_3_latency'].mean()
+
+    summary_stats.loc['AVG_PRE_GO_SNIFF_DUR_1'] = combined_df.loc[go_trials_mask, "pre_sniff_dur_1"].mean()
+    summary_stats.loc['AVG_PRE_GO_SNIFF_DUR_2'] = combined_df.loc[go_trials_mask, "pre_sniff_dur_2"].mean()
+    summary_stats.loc['AVG_PRE_GO_SNIFF_DUR_3'] = combined_df.loc[go_trials_mask, "pre_sniff_dur_3"].mean()
+    summary_stats.loc['AVG_PRE_NOGO_SNIFF_DUR_1'] = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_1"].mean()
+    summary_stats.loc['AVG_PRE_NOGO_SNIFF_DUR_2'] = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_2"].mean()
+    summary_stats.loc['AVG_PRE_NOGO_SNIFF_DUR_3'] = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_3"].mean()
+
+    summary_stats.loc['AVG_POST_GO_SNIFF_DUR_1'] = combined_df.loc[go_trials_mask, "post_sniff_dur_1"].mean()
+    summary_stats.loc['AVG_POST_GO_SNIFF_DUR_2'] = combined_df.loc[go_trials_mask, "post_sniff_dur_1"].mean()
+    summary_stats.loc['AVG_POST_GO_SNIFF_DUR_3'] = combined_df.loc[go_trials_mask, "post_sniff_dur_1"].mean()
+    summary_stats.loc['AVG_POST_NOGO_SNIFF_DUR_1'] = combined_df.loc[nogo_trials_mask, "post_sniff_dur_1"].mean()
+    summary_stats.loc['AVG_POST_NOGO_SNIFF_DUR_2'] = combined_df.loc[nogo_trials_mask, "post_sniff_dur_1"].mean()
+    summary_stats.loc['AVG_POST_NOGO_SNIFF_DUR_3'] = combined_df.loc[nogo_trials_mask, "post_sniff_dur_1"].mean()
+
+    summary_stats = summary_stats.reset_index(drop=False, inplace=False)
+    summary_stats.columns = ['Summary', 'Stat']
+    return summary_stats
