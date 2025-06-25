@@ -241,6 +241,7 @@ def process_files(
                     file_output_dir,
                     PRE_ODOR_COUNT_TIME_MS,
                     POST_ODOR_COUNT_TIME_MS,
+                    tpe
                 )
                 h5.export(file_output_dir)
 

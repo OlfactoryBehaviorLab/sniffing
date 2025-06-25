@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from dewan_h5 import DewanH5
-
+from dewan_utils.async_io import AsyncIO
 
 COLUMNS = [
     # Repeating Data
@@ -25,6 +25,20 @@ COLUMNS = [
     "post_sniff_dur_1",
     "post_sniff_dur_2",
     "post_sniff_dur_3",
+]
+
+SHEET_1_COLUMNS = [
+    # Repeating Data
+    "ID",
+    "odor",
+    "conc",
+    # Trial Data
+    "type",
+    "result",
+    "correct",
+    # Counts
+    "pre-post",
+    "count"
 ]
 
 SUMMARY_COLUMN = [
@@ -57,6 +71,13 @@ SUMMARY_COLUMN = [
     'AVG_POST_NOGO_SNIFF_DUR_3',
 ]
 
+CORRECT_MAP = {
+    1: 1, # 1 is correct
+    2: 1, # 1 is correct
+    3: 0, # 0 is incorrect
+    5: 0  # 0 is incorrect
+}
+
 def repack_data(
     h5_file: DewanH5,
     inhale_counts,
@@ -65,6 +86,7 @@ def repack_data(
     output_dir,
     PRE_ODOR_COUNT_TIME_MS,  # noqa: N803
     POST_ODOR_COUNT_TIME_MS,  # noqa: N803
+    tpe: AsyncIO
 ):
     animal_ID = h5_file.mouse
     odor = h5_file.odors
@@ -84,6 +106,10 @@ def repack_data(
     combined_df.loc[:, "result"] = trial_results
 
     inhale_counts.index = ["pre_odor_sniffs", "post_odor_sniffs"]
+
+    sheet_1 = output_sheet_1(
+        animal_ID, odor, concentration, trial_type, trial_results, inhale_counts
+    )
 
     inhale_latencies.index = ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]
 
@@ -106,13 +132,11 @@ def repack_data(
     summary_stats = calculate_summary_stats(combined_df)
     combined_df = pd.concat((combined_df, summary_stats), axis=1)
 
-    filename = f"{animal_ID}-{concentration}-combined.xlsx"
-    filename_spss = f"{animal_ID}-{concentration}-spss.xlsx"
-    output_path = output_dir.joinpath(filename)
-    output_path_spss = output_dir.joinpath(filename_spss)
+    combined_file_path = output_dir.joinpath(f"{animal_ID}-{concentration}-combined.xlsx")
+    sheet_1_path = output_dir.joinpath(f"1_{animal_ID}-{concentration}-sniff_count.xlsx")
 
-
-    combined_df.to_excel(output_path)
+    tpe.queue_save_df(combined_df, combined_file_path)
+    tpe.queue_save_df(sheet_1, sheet_1_path)
 
 
 def unpack_inhale_durations(
@@ -141,6 +165,38 @@ def unpack_inhale_durations(
     ]
 
     return pre_fv_inhalation_durations, post_fv_inhalation_durations
+
+
+def output_sheet_1(
+    animal_ID: int, #NOQA N803
+    odor: str,
+    concentration: float,
+    trial_type: pd.Series,
+    trial_results: pd.Series,
+    inhale_counts: pd.DataFrame,
+):
+    index = inhale_counts.columns.to_numpy()
+
+
+    sheet_1_pre_df = pd.DataFrame(index=index, columns=SHEET_1_COLUMNS)
+    sheet_1_pre_df["ID"] = np.repeat(animal_ID, len(index))
+    sheet_1_pre_df["odor"] = np.repeat(odor, len(index))
+    sheet_1_pre_df["conc"] = np.repeat(concentration, len(index))
+    sheet_1_pre_df["type"] = trial_type
+    sheet_1_pre_df["result"] = trial_results
+    sheet_1_pre_df["correct"] = trial_results.replace(CORRECT_MAP)
+    pre_sniff_count = inhale_counts.loc["pre_odor_sniffs"].T
+    count_type = np.repeat(-1, len(pre_sniff_count))
+    sheet_1_pre_df.loc[:,"pre-post"] = count_type
+    sheet_1_pre_df.loc[:,"post-count"] = pre_sniff_count
+
+    sheet_1_post_df = sheet_1_pre_df.copy()
+    post_sniff_count = inhale_counts.loc["post_odor_sniffs"].T
+    count_type = np.repeat(1, len(post_sniff_count))
+    sheet_1_post_df.loc[:, "pre-post"] = count_type
+    sheet_1_post_df.loc[:, "count"] = post_sniff_count
+
+    return pd.concat([sheet_1_pre_df.T, sheet_1_post_df.T], axis=1).T
 
 
 def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
