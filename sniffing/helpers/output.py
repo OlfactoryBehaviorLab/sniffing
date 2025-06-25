@@ -185,7 +185,7 @@ def output_sheet_1(
     pre_sniff_count = inhale_counts.loc["pre_odor_sniffs"].T
     count_type = np.repeat(-1, len(pre_sniff_count))
     sheet_1_pre_df.loc[:,"pre-post"] = count_type
-    sheet_1_pre_df.loc[:,"post-count"] = pre_sniff_count
+    sheet_1_pre_df.loc[:,"count"] = pre_sniff_count
 
     sheet_1_post_df = sheet_1_pre_df.copy()
     post_sniff_count = inhale_counts.loc["post_odor_sniffs"].T
@@ -193,8 +193,8 @@ def output_sheet_1(
     sheet_1_post_df.loc[:, "pre-post"] = count_type
     sheet_1_post_df.loc[:, "count"] = post_sniff_count
 
-    return pd.concat([sheet_1_pre_df.T, sheet_1_post_df.T], axis=1).T
-
+    sheet_1_df =  pd.concat([sheet_1_pre_df.T, sheet_1_post_df.T], axis=1).T
+    return sheet_1_df.sort_index(inplace=False)
 
 def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
     trial_name = trial_df.index.get_level_values(0).unique()[0]
