@@ -55,6 +55,7 @@ def process_files(
                     + len(h5.short_trials)
                     + len(h5.missing_packet_trials)
                     + len(h5.cheat_check_trials)
+                    + len(h5.zero_trials)
                 )
                 _perc_loss = round(
                     100
@@ -71,6 +72,7 @@ def process_files(
                         len(h5.short_trials),
                         len(h5.missing_packet_trials),
                         len(h5.cheat_check_trials),
+                        len(h5.zero_trials),
                         _total_original_trials,
                         _perc_loss,
                     )
@@ -279,6 +281,7 @@ def process_files(
         "SHORT",
         "PACKETS",
         "CHEATCHK",
+        "ZERO",
         "TOTAL",
         "PERCENT_LOSS",
     ]
