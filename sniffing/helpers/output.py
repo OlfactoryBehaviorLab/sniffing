@@ -127,6 +127,7 @@ def repack_data(
     combined_df = combined_df.infer_objects().fillna("X")
 
     summary_stats = calculate_summary_stats(combined_df)
+    summary_stats.index = combined_df.index[:summary_stats.shape[0]]
     combined_df = pd.concat((combined_df, summary_stats), axis=1)
 
     combined_file_path = output_dir.joinpath(f"{animal_ID}-{concentration}-combined.xlsx")
