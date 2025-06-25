@@ -42,33 +42,30 @@ SHEET_1_COLUMNS = [
 ]
 
 SUMMARY_COLUMN = [
-    'TOTAL_PRE_SNIFFS',
-    'TOTAL_POST_SNIFFS',
-    'TOTAL_PRE_GO_SNIFFS',
-    'TOTAL_PRE_NOGO_SNIFFS',
-    'TOTAL_POST_GO_SNIFFS',
-    'TOTAL_POST_NOGO_SNIFFS',
-
-    'AVG_GO_LATENCY_1',
-    'AVG_GO_LATENCY_2',
-    'AVG_GO_LATENCY_3',
-    'AVG_NOGO_LATENCY_1',
-    'AVG_NOGO_LATENCY_2',
-    'AVG_NOGO_LATENCY_3',
-
-    'AVG_PRE_GO_SNIFF_DUR_1',
-    'AVG_PRE_GO_SNIFF_DUR_2',
-    'AVG_PRE_GO_SNIFF_DUR_3',
-    'AVG_PRE_NOGO_SNIFF_DUR_1',
-    'AVG_PRE_NOGO_SNIFF_DUR_2',
-    'AVG_PRE_NOGO_SNIFF_DUR_3',
-
-    'AVG_POST_GO_SNIFF_DUR_1',
-    'AVG_POST_GO_SNIFF_DUR_2',
-    'AVG_POST_GO_SNIFF_DUR_3',
-    'AVG_POST_NOGO_SNIFF_DUR_1',
-    'AVG_POST_NOGO_SNIFF_DUR_2',
-    'AVG_POST_NOGO_SNIFF_DUR_3',
+    "TOTAL_PRE_SNIFFS",
+    "TOTAL_POST_SNIFFS",
+    "TOTAL_PRE_GO_SNIFFS",
+    "TOTAL_PRE_NOGO_SNIFFS",
+    "TOTAL_POST_GO_SNIFFS",
+    "TOTAL_POST_NOGO_SNIFFS",
+    "AVG_GO_LATENCY_1",
+    "AVG_GO_LATENCY_2",
+    "AVG_GO_LATENCY_3",
+    "AVG_NOGO_LATENCY_1",
+    "AVG_NOGO_LATENCY_2",
+    "AVG_NOGO_LATENCY_3",
+    "AVG_PRE_GO_SNIFF_DUR_1",
+    "AVG_PRE_GO_SNIFF_DUR_2",
+    "AVG_PRE_GO_SNIFF_DUR_3",
+    "AVG_PRE_NOGO_SNIFF_DUR_1",
+    "AVG_PRE_NOGO_SNIFF_DUR_2",
+    "AVG_PRE_NOGO_SNIFF_DUR_3",
+    "AVG_POST_GO_SNIFF_DUR_1",
+    "AVG_POST_GO_SNIFF_DUR_2",
+    "AVG_POST_GO_SNIFF_DUR_3",
+    "AVG_POST_NOGO_SNIFF_DUR_1",
+    "AVG_POST_NOGO_SNIFF_DUR_2",
+    "AVG_POST_NOGO_SNIFF_DUR_3",
 ]
 
 CORRECT_MAP = {
@@ -247,65 +244,129 @@ def _get_post_fv_inhales(trial_df: pd.DataFrame, POST_ODOR_COUNT_TIME_MS):  # no
 
 
 def calculate_summary_stats(combined_df: pd.DataFrame) -> pd.DataFrame:
-    go_trials_mask = combined_df['type'] == 1
-    nogo_trials_mask = combined_df['type'] == 2
+    go_trials_mask = combined_df["type"] == 1
+    nogo_trials_mask = combined_df["type"] == 2
 
-    summary_stats = pd.DataFrame(index=SUMMARY_COLUMN, columns=['Stat'])
+    summary_stats = pd.DataFrame(index=SUMMARY_COLUMN, columns=["Stat"])
 
-    summary_stats.loc['TOTAL_PRE_SNIFFS'] = combined_df.loc[:, 'pre_odor_sniffs'].sum()
-    summary_stats.loc['TOTAL_POST_SNIFFS'] = combined_df.loc[:, 'post_odor_sniffs'].sum()
-    summary_stats.loc['TOTAL_PRE_GO_SNIFFS'] = combined_df.loc[go_trials_mask, 'pre_odor_sniffs'].sum()
-    summary_stats.loc['TOTAL_PRE_NOGO_SNIFFS'] = combined_df.loc[nogo_trials_mask, 'pre_odor_sniffs'].sum()
-    summary_stats.loc['TOTAL_POST_GO_SNIFFS'] = combined_df.loc[go_trials_mask, 'post_odor_sniffs'].sum()
-    summary_stats.loc['TOTAL_POST_NOGO_SNIFFS'] = combined_df.loc[nogo_trials_mask, 'post_odor_sniffs'].sum()
+    summary_stats.loc["TOTAL_PRE_SNIFFS"] = combined_df.loc[:, "pre_odor_sniffs"].sum()
+    summary_stats.loc["TOTAL_POST_SNIFFS"] = combined_df.loc[
+        :, "post_odor_sniffs"
+    ].sum()
+    summary_stats.loc["TOTAL_PRE_GO_SNIFFS"] = combined_df.loc[
+        go_trials_mask, "pre_odor_sniffs"
+    ].sum()
+    summary_stats.loc["TOTAL_PRE_NOGO_SNIFFS"] = combined_df.loc[
+        nogo_trials_mask, "pre_odor_sniffs"
+    ].sum()
+    summary_stats.loc["TOTAL_POST_GO_SNIFFS"] = combined_df.loc[
+        go_trials_mask, "post_odor_sniffs"
+    ].sum()
+    summary_stats.loc["TOTAL_POST_NOGO_SNIFFS"] = combined_df.loc[
+        nogo_trials_mask, "post_odor_sniffs"
+    ].sum()
 
-    _sniff_latency_1 = combined_df.loc[:, "sniff_1_latency"].replace({'X':-1})
-    summary_stats.loc['AVG_LATENCY_1'] = _sniff_latency_1[_sniff_latency_1 > 0].mean()
-    _sniff_latency_2 = combined_df.loc[:, "sniff_2_latency"].replace({'X':-1})
-    summary_stats.loc['AVG_LATENCY_2'] = _sniff_latency_2[_sniff_latency_2 > 0].mean()
-    _sniff_latency_3 = combined_df.loc[:, "sniff_3_latency"].replace({'X':-1})
-    summary_stats.loc['AVG_LATENCY_3'] = _sniff_latency_3[_sniff_latency_3 > 0].mean()
+    _sniff_latency_1 = combined_df.loc[:, "sniff_1_latency"].replace({"X": -1})
+    summary_stats.loc["AVG_LATENCY_1"] = _sniff_latency_1[_sniff_latency_1 > 0].mean()
+    _sniff_latency_2 = combined_df.loc[:, "sniff_2_latency"].replace({"X": -1})
+    summary_stats.loc["AVG_LATENCY_2"] = _sniff_latency_2[_sniff_latency_2 > 0].mean()
+    _sniff_latency_3 = combined_df.loc[:, "sniff_3_latency"].replace({"X": -1})
+    summary_stats.loc["AVG_LATENCY_3"] = _sniff_latency_3[_sniff_latency_3 > 0].mean()
 
-    _sniff_1_latency = combined_df.loc[go_trials_mask, 'sniff_1_latency'].replace({'X':-1})
-    summary_stats.loc['AVG_GO_LATENCY_1'] = _sniff_1_latency[_sniff_1_latency > 0].mean()
-    _sniff_2_latency = combined_df.loc[go_trials_mask, 'sniff_2_latency'].replace({'X':-1})
-    summary_stats.loc['AVG_GO_LATENCY_2'] = _sniff_2_latency[_sniff_2_latency > 0].mean()
-    _sniff_3_latency = combined_df.loc[go_trials_mask, 'sniff_3_latency'].replace({'X':-1})
-    summary_stats.loc['AVG_GO_LATENCY_3'] = _sniff_3_latency[_sniff_3_latency > 0].mean()
+    _sniff_1_latency = combined_df.loc[go_trials_mask, "sniff_1_latency"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_GO_LATENCY_1"] = _sniff_1_latency[
+        _sniff_1_latency > 0
+    ].mean()
+    _sniff_2_latency = combined_df.loc[go_trials_mask, "sniff_2_latency"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_GO_LATENCY_2"] = _sniff_2_latency[
+        _sniff_2_latency > 0
+    ].mean()
+    _sniff_3_latency = combined_df.loc[go_trials_mask, "sniff_3_latency"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_GO_LATENCY_3"] = _sniff_3_latency[
+        _sniff_3_latency > 0
+    ].mean()
 
-    _sniff_1_latency = combined_df.loc[nogo_trials_mask, 'sniff_1_latency'].replace({'X':-1})
-    summary_stats.loc['AVG_NOGO_LATENCY_1'] = _sniff_1_latency[_sniff_1_latency > 0].mean()
-    _sniff_2_latency = combined_df.loc[nogo_trials_mask, 'sniff_2_latency'].replace({'X':-1})
-    summary_stats.loc['AVG_NOGO_LATENCY_2'] = _sniff_2_latency[_sniff_2_latency > 0].mean()
-    _sniff_3_latency = combined_df.loc[nogo_trials_mask, 'sniff_3_latency'].replace({'X':-1})
-    summary_stats.loc['AVG_NOGO_LATENCY_3'] = _sniff_3_latency[_sniff_3_latency > 0].mean()
+    _sniff_1_latency = combined_df.loc[nogo_trials_mask, "sniff_1_latency"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_NOGO_LATENCY_1"] = _sniff_1_latency[
+        _sniff_1_latency > 0
+    ].mean()
+    _sniff_2_latency = combined_df.loc[nogo_trials_mask, "sniff_2_latency"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_NOGO_LATENCY_2"] = _sniff_2_latency[
+        _sniff_2_latency > 0
+    ].mean()
+    _sniff_3_latency = combined_df.loc[nogo_trials_mask, "sniff_3_latency"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_NOGO_LATENCY_3"] = _sniff_3_latency[
+        _sniff_3_latency > 0
+    ].mean()
 
-    _sniff_dur_1 = combined_df.loc[go_trials_mask, "pre_sniff_dur_1"].replace({'X':-1})
-    summary_stats.loc['AVG_PRE_GO_SNIFF_DUR_1'] = _sniff_dur_1[_sniff_dur_1 > 0].mean()
-    _sniff_dur_2 = combined_df.loc[go_trials_mask, "pre_sniff_dur_2"].replace({'X':-1})
-    summary_stats.loc['AVG_PRE_GO_SNIFF_DUR_2'] = _sniff_dur_2[_sniff_dur_2 > 0].mean()
-    _sniff_dur_3 = combined_df.loc[go_trials_mask, "pre_sniff_dur_3"].replace({'X':-1})
-    summary_stats.loc['AVG_PRE_GO_SNIFF_DUR_3'] = _sniff_dur_3[_sniff_dur_3 > 0].mean()
-    _sniff_dur_1 = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_1"].replace({'X':-1})
-    summary_stats.loc['AVG_PRE_NOGO_SNIFF_DUR_1'] = _sniff_dur_1[_sniff_dur_1 > 0].mean()
-    _sniff_dur_2 = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_2"].replace({'X':-1})
-    summary_stats.loc['AVG_PRE_NOGO_SNIFF_DUR_2'] = _sniff_dur_2[_sniff_dur_2 > 0].mean()
-    _sniff_dur_3 = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_3"].replace({'X':-1})
-    summary_stats.loc['AVG_PRE_NOGO_SNIFF_DUR_3'] = _sniff_dur_3[_sniff_dur_3 > 0].mean()
+    _sniff_dur_1 = combined_df.loc[go_trials_mask, "pre_sniff_dur_1"].replace({"X": -1})
+    summary_stats.loc["AVG_PRE_GO_SNIFF_DUR_1"] = _sniff_dur_1[_sniff_dur_1 > 0].mean()
+    _sniff_dur_2 = combined_df.loc[go_trials_mask, "pre_sniff_dur_2"].replace({"X": -1})
+    summary_stats.loc["AVG_PRE_GO_SNIFF_DUR_2"] = _sniff_dur_2[_sniff_dur_2 > 0].mean()
+    _sniff_dur_3 = combined_df.loc[go_trials_mask, "pre_sniff_dur_3"].replace({"X": -1})
+    summary_stats.loc["AVG_PRE_GO_SNIFF_DUR_3"] = _sniff_dur_3[_sniff_dur_3 > 0].mean()
+    _sniff_dur_1 = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_1"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_PRE_NOGO_SNIFF_DUR_1"] = _sniff_dur_1[
+        _sniff_dur_1 > 0
+    ].mean()
+    _sniff_dur_2 = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_2"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_PRE_NOGO_SNIFF_DUR_2"] = _sniff_dur_2[
+        _sniff_dur_2 > 0
+    ].mean()
+    _sniff_dur_3 = combined_df.loc[nogo_trials_mask, "pre_sniff_dur_3"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_PRE_NOGO_SNIFF_DUR_3"] = _sniff_dur_3[
+        _sniff_dur_3 > 0
+    ].mean()
 
-    _sniff_dur_1 = combined_df.loc[go_trials_mask, "post_sniff_dur_1"].replace({'X':-1})
-    summary_stats.loc['AVG_POST_GO_SNIFF_DUR_1'] = _sniff_dur_1[_sniff_dur_1 > 0].mean()
-    _sniff_dur_2 = combined_df.loc[go_trials_mask, "post_sniff_dur_2"].replace({'X':-1})
-    summary_stats.loc['AVG_POST_GO_SNIFF_DUR_2'] = _sniff_dur_2[_sniff_dur_2 > 0].mean()
-    _sniff_dur_3 = combined_df.loc[go_trials_mask, "post_sniff_dur_3"].replace({'X':-1})
-    summary_stats.loc['AVG_POST_GO_SNIFF_DUR_3'] = _sniff_dur_3[_sniff_dur_3 > 0].mean()
-    _sniff_dur_1 = combined_df.loc[nogo_trials_mask, "post_sniff_dur_1"].replace({'X':-1})
-    summary_stats.loc['AVG_POST_NOGO_SNIFF_DUR_1'] = _sniff_dur_1[_sniff_dur_1 > 0].mean()
-    _sniff_dur_2 = combined_df.loc[nogo_trials_mask, "post_sniff_dur_2"].replace({'X':-1})
-    summary_stats.loc['AVG_POST_NOGO_SNIFF_DUR_2'] = _sniff_dur_2[_sniff_dur_2 > 0].mean()
-    _sniff_dur_3 = combined_df.loc[nogo_trials_mask, "post_sniff_dur_3"].replace({'X':-1})
-    summary_stats.loc['AVG_POST_NOGO_SNIFF_DUR_3'] = _sniff_dur_3[_sniff_dur_3 > 0].mean()
+    _sniff_dur_1 = combined_df.loc[go_trials_mask, "post_sniff_dur_1"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_POST_GO_SNIFF_DUR_1"] = _sniff_dur_1[_sniff_dur_1 > 0].mean()
+    _sniff_dur_2 = combined_df.loc[go_trials_mask, "post_sniff_dur_2"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_POST_GO_SNIFF_DUR_2"] = _sniff_dur_2[_sniff_dur_2 > 0].mean()
+    _sniff_dur_3 = combined_df.loc[go_trials_mask, "post_sniff_dur_3"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_POST_GO_SNIFF_DUR_3"] = _sniff_dur_3[_sniff_dur_3 > 0].mean()
+    _sniff_dur_1 = combined_df.loc[nogo_trials_mask, "post_sniff_dur_1"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_POST_NOGO_SNIFF_DUR_1"] = _sniff_dur_1[
+        _sniff_dur_1 > 0
+    ].mean()
+    _sniff_dur_2 = combined_df.loc[nogo_trials_mask, "post_sniff_dur_2"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_POST_NOGO_SNIFF_DUR_2"] = _sniff_dur_2[
+        _sniff_dur_2 > 0
+    ].mean()
+    _sniff_dur_3 = combined_df.loc[nogo_trials_mask, "post_sniff_dur_3"].replace(
+        {"X": -1}
+    )
+    summary_stats.loc["AVG_POST_NOGO_SNIFF_DUR_3"] = _sniff_dur_3[
+        _sniff_dur_3 > 0
+    ].mean()
 
     summary_stats = summary_stats.reset_index(drop=False, inplace=False)
-    summary_stats.columns = ['Summary', 'Stat']
+    summary_stats.columns = ["Summary", "Stat"]
     return summary_stats

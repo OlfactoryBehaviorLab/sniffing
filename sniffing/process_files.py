@@ -24,14 +24,15 @@ PRE_ODOR_COUNT_TIME_MS = -350
 POST_ODOR_COUNT_TIME_MS = 350
 
 logging.basicConfig(level=logging.NOTSET)
-plt.set_loglevel(level = 'warning')
+plt.set_loglevel(level="warning")
+
 
 def process_files(
     h5_files,
     output_dir,
     run_manual_curation=False,
     filtered_manual_curation=True,
-    plot_figs=True,
+    plot_figs=False,
     display_plots=False,
     ignore_errors=False,
 ):
@@ -45,7 +46,9 @@ def process_files(
         try:
             # print(f"Processing {h5_file_path.name}")
 
-            with DewanH5(h5_file_path, drop_early_lick_trials=False, drop_cheating_trials=True) as h5:
+            with DewanH5(
+                h5_file_path, drop_early_lick_trials=False, drop_cheating_trials=True
+            ) as h5:
                 _total_original_trials = (
                     h5.total_trials
                     + len(h5.early_lick_trials)
@@ -225,7 +228,7 @@ def process_files(
                             trial_number,
                             plot_output_dir,
                             display_plots,
-                            tpe=True
+                            tpe=True,
                         )
                         tpe.queue_save_plot(fig, path, logger)
                     filtered_trimmed_trace = filtered_trimmed_trace.rename(trial_number)

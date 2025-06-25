@@ -168,23 +168,26 @@ def main():
                 windowed_bin_counts = concentration_dir.joinpath(
                     "binned_sniff_counts.xlsx"
                 )
-                combined_data_matrix = list(
-                    concentration_dir.glob("*TrialParams.xlsx")
-                )
+                combined_data_matrix = list(concentration_dir.glob("*TrialParams.xlsx"))
 
                 if not combined_data_matrix:
-                    warnings.warn(f"{concentration_dir.name}-{animal_dir.name} is missing TrialParams.xlsx! Skipping...", stacklevel=2)
+                    warnings.warn(
+                        f"{concentration_dir.name}-{animal_dir.name} is missing TrialParams.xlsx! Skipping...",
+                        stacklevel=2,
+                    )
                     continue
                 else:
                     combined_data_matrix = combined_data_matrix[0]
 
                 all_traces = list(concentration_dir.glob("all_trimmed_traces.xlsx"))
                 if not all_traces:
-                    warnings.warn(f"{concentration_dir.name}-{animal_dir.name} is missing all_trimmed_traces.xlsx! Skipping...", stacklevel=2)
+                    warnings.warn(
+                        f"{concentration_dir.name}-{animal_dir.name} is missing all_trimmed_traces.xlsx! Skipping...",
+                        stacklevel=2,
+                    )
                     continue
                 else:
                     all_traces = all_traces[0]
-
 
                 concentration_files[concentration_dir.name][animal_dir.name] = {
                     "combined": combined_data_matrix,

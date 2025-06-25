@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pandas import Series
 
+
 def plot_multi_traces(traces: list[Series], trial_name) -> None:
     """
     Plots multiple traces in individual rows. Useful for visualizing raw v. preprocessed traces
@@ -154,7 +155,9 @@ def plot_traces(
     max_y = max(filtered_trace)
     _trimmed_lick_timestamps = np.intersect1d(filtered_trace.index, lick_timestamps)
     # Don't plot any licks after the sniff data is done
-    _ = axs[1].vlines(x=_trimmed_lick_timestamps, ymin=max_y*0.9, ymax=max_y, color='r')
+    _ = axs[1].vlines(
+        x=_trimmed_lick_timestamps, ymin=max_y * 0.9, ymax=max_y, color="r"
+    )
 
     fig.legend(loc=2, fontsize=12)
     plt.tight_layout()
