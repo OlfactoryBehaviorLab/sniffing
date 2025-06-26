@@ -68,6 +68,8 @@ SUMMARY_COLUMN = [
     "AVG_POST_NOGO_SNIFF_DUR_3",
 ]
 
+
+
 CORRECT_MAP = {
     1: 1, # 1 is correct
     2: 1, # 1 is correct
@@ -98,7 +100,7 @@ def repack_data(
 
     combined_df.loc[:, "ID"] = animal_ID
     combined_df.loc[:, "odor"] = odor
-    combined_df.loc[:, "conc"] = concentration
+    combined_df.loc[:, "conc"] = concentration[-1]
     combined_df.loc[:, "type"] = trial_type
     combined_df.loc[:, "result"] = trial_results
 
@@ -168,21 +170,20 @@ def unpack_inhale_durations(
 def output_sheet_1(
     animal_ID: int, #NOQA N803
     odor: str,
-    concentration: float,
+    concentration: str,
     trial_type: pd.Series,
     trial_results: pd.Series,
     inhale_counts: pd.DataFrame,
 ):
     index = inhale_counts.columns.to_numpy()
 
-
     sheet_1_pre_df = pd.DataFrame(index=index, columns=SHEET_1_COLUMNS)
-    sheet_1_pre_df["ID"] = np.repeat(animal_ID, len(index))
-    sheet_1_pre_df["odor"] = np.repeat(odor, len(index))
-    sheet_1_pre_df["conc"] = np.repeat(concentration, len(index))
-    sheet_1_pre_df["type"] = trial_type
-    sheet_1_pre_df["result"] = trial_results
-    sheet_1_pre_df["correct"] = trial_results.replace(CORRECT_MAP)
+    sheet_1_pre_df.loc[:, "ID"] = animal_ID
+    sheet_1_pre_df.loc[:, "odor"] = odor
+    sheet_1_pre_df.loc[:, "conc"] = concentration[-1]
+    sheet_1_pre_df.loc[:, "type"] = trial_type
+    sheet_1_pre_df.loc[:, "result"] = trial_results
+    sheet_1_pre_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
     pre_sniff_count = inhale_counts.loc["pre_odor_sniffs"].T
     count_type = np.repeat(-1, len(pre_sniff_count))
     sheet_1_pre_df.loc[:,"pre-post"] = count_type
