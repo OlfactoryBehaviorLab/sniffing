@@ -1,20 +1,17 @@
-import pandas as pd
-
-from .process_files import process_files
-from .combined import process_combined
 import argparse
 import os
 import sys
 import warnings
 import logging
-
-
+import pandas as pd
 from PySide6.QtWidgets import QFileDialog, QApplication
 from pathlib import Path
 
+from sniffing.process_files import process_files
+from sniffing.combined import process_combined
 DEFAULT_DIR = Path("/mnt/r2d2/5_Projects/Concentration_Sniffing_Dynamics/Raw_Data")
 
-logging.basicConfig(level=logging.NOTSET)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def select_dialog(file=False):

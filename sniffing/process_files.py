@@ -23,7 +23,7 @@ BIN_STEPS = 50  # ms
 PRE_ODOR_COUNT_TIME_MS = -350
 POST_ODOR_COUNT_TIME_MS = 350
 
-logging.basicConfig(level=logging.NOTSET)
+#logging.basicConfig(level=logging.WARNING)
 plt.set_loglevel(level="warning")
 
 
