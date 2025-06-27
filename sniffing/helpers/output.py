@@ -72,6 +72,18 @@ SHEET_3_COLUMNS = [
     "ISI"
 ]
 
+SHEET_4_COLUMNS = [
+    # Repeating Data
+    "ID",
+    "odor",
+    "conc",
+    # Trial Data
+    "type",
+    "result",
+    "correct",
+    "LEN"
+]
+
 SUMMARY_COLUMN = [
     "TOTAL_PRE_SNIFFS",
     "TOTAL_POST_SNIFFS",
@@ -99,8 +111,6 @@ SUMMARY_COLUMN = [
     "AVG_POST_NOGO_SNIFF_DUR_3",
 ]
 
-
-
 CORRECT_MAP = {
     1: 1, # 1 is correct
     2: 1, # 1 is correct
@@ -113,6 +123,7 @@ def repack_data(
     inhale_counts,
     inhale_latencies,
     inhale_durations,
+    trial_lengths: pd.Series,
     output_dir,
     PRE_ODOR_COUNT_TIME_MS,  # noqa: N803
     POST_ODOR_COUNT_TIME_MS,  # noqa: N803
@@ -170,15 +181,19 @@ def repack_data(
     summary_stats.index = combined_df.index[:summary_stats.shape[0]]
     combined_df = pd.concat((combined_df, summary_stats), axis=1)
 
+    sheet_4 = output_sheet_4(animal_ID, odor, concentration, trial_type, trial_results, trial_lengths)
+
     combined_file_path = output_dir.joinpath(f"{animal_ID}-{concentration}-combined.xlsx")
     sheet_1_path = output_dir.joinpath(f"1_{animal_ID}-{concentration}-sniff_count.xlsx")
     sheet_2_path = output_dir.joinpath(f"2_{animal_ID}-{concentration}-sniff_duration.xlsx")
     sheet_3_path = output_dir.joinpath(f"3_{animal_ID}-{concentration}-ISI.xlsx")
+    sheet_4_path = output_dir.joinpath(f"4_{animal_ID}-{concentration}-lengths.xlsx")
 
     tpe.queue_save_df(combined_df, combined_file_path)
     tpe.queue_save_df(sheet_1, sheet_1_path)
     tpe.queue_save_df(sheet_2, sheet_2_path)
     tpe.queue_save_df(sheet_3, sheet_3_path)
+    tpe.queue_save_df(sheet_4, sheet_4_path)
 
 
 def unpack_inhale_durations(
@@ -264,6 +279,7 @@ def output_sheet_2(
         sheet_2_pre_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
         sheet_2_pre_df.loc[:, "pre-post"] = -1
         sheet_2_pre_df.loc[:, "sniff_num"] = sniff_num_int
+        data.loc[data == 0] = np.nan
         sheet_2_pre_df.loc[:, "duration"] = data
         sheet_2_df = pd.concat([sheet_2_df, sheet_2_pre_df.T], axis=1)
 
@@ -279,6 +295,7 @@ def output_sheet_2(
         sheet_2_post_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
         sheet_2_post_df.loc[:, "pre-post"] = 1
         sheet_2_post_df.loc[:, "sniff_num"] = sniff_num_int
+        data.loc[data == 0] = np.nan
         sheet_2_post_df.loc[:, "duration"] = data
         sheet_2_df = pd.concat([sheet_2_df, sheet_2_post_df.T], axis=1)
 
@@ -333,6 +350,25 @@ def output_sheet_3(
     sheet_3_df = pd.concat((ISI_1_df.T, ISI_2_df.T, ISI_3_df.T), axis=1).T
     return sheet_3_df.sort_index(inplace=False)
 
+def output_sheet_4(
+        animal_ID: int,  # NOQA N803
+        odor: str,
+        concentration: str,
+        trial_type: pd.Series,
+        trial_results: pd.Series,
+        trial_lengths: pd.Series,
+):
+
+    sheet_4_df = pd.DataFrame(index=trial_lengths.index, columns=SHEET_4_COLUMNS)
+    sheet_4_df.loc[:, "ID"] = animal_ID
+    sheet_4_df.loc[:, "odor"] = odor
+    sheet_4_df.loc[:, "conc"] = concentration[-1]
+    sheet_4_df.loc[:, "type"] = trial_type
+    sheet_4_df.loc[:, "result"] = trial_results
+    sheet_4_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
+    sheet_4_df.loc[:, "LEN"] = trial_lengths
+
+    return sheet_4_df
 
 def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
     trial_name = trial_df.index.get_level_values(0).unique()[0]

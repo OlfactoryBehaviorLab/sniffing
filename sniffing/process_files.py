@@ -232,17 +232,20 @@ def process_files(
                             display_plots,
                             tpe=True,
                         )
-                        tpe.queue_save_plot(fig, path, logger)
+                        tpe.queue_save_plot(fig, path)
                     filtered_trimmed_trace = filtered_trimmed_trace.rename(trial_number)
                     all_trimmed_traces = pd.concat(
                         (all_trimmed_traces, filtered_trimmed_trace), axis=1
                     )
+
+                trial_lengths = h5.trial_durations
 
                 output.repack_data(
                     h5,
                     inhale_counts,
                     inhale_latencies,
                     inhale_durations,
+                    trial_lengths,
                     file_output_dir,
                     PRE_ODOR_COUNT_TIME_MS,
                     POST_ODOR_COUNT_TIME_MS,
