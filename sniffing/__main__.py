@@ -3,6 +3,7 @@ import pandas as pd
 from .process_files import process_files
 from .combined import process_combined
 import argparse
+import os
 import sys
 import warnings
 import logging
@@ -34,9 +35,13 @@ def main():
     file_path = None
     output_dir = None
 
-    app = QApplication.instance()
-    if not app:
-        app = QApplication(sys.argv)
+    qt_available = False
+
+    if "WSL_DISTRO_NAME" not in os.environ:
+        qt_available = True
+        app = QApplication.instance()
+        if not app:
+            app = QApplication(sys.argv)
 
     parser = argparse.ArgumentParser(description="Sniffing Analysis")
     parser.add_argument(
@@ -85,7 +90,10 @@ def main():
     # If we specify single, we're only processing one file
     if args.single is not None:
         if len(args.single) == 0:
-            _path = select_dialog(file=True)
+            if qt_available:
+                _path = select_dialog(file=True)
+            else:
+                raise RuntimeError("QT is unavailable! Cannot open selection dialog")
             if len(_path) == 0:
                 raise FileNotFoundError("No file selected!")
             file_path = Path(_path)
@@ -107,7 +115,10 @@ def main():
                 )
             data_dir = _path
         else:
-            _path = select_dialog()
+            if qt_available:
+                _path = select_dialog()
+            else:
+                raise RuntimeError("QT is unavailable! Cannot open selection dialog")
             if len(_path) > 0:
                 data_dir = Path(_path)
             else:
