@@ -246,6 +246,7 @@ def process_files(
                     inhale_latencies,
                     inhale_durations,
                     trial_lengths,
+                    binned_counts,
                     file_output_dir,
                     PRE_ODOR_COUNT_TIME_MS,
                     POST_ODOR_COUNT_TIME_MS,

@@ -84,6 +84,19 @@ SHEET_4_COLUMNS = [
     "LEN"
 ]
 
+SHEET_5_COLUMNS = [
+    # Repeating Data
+    "ID",
+    "odor",
+    "conc",
+    # Trial Data
+    "type",
+    "result",
+    "correct",
+    "bin",
+    "count"
+]
+
 SUMMARY_COLUMN = [
     "TOTAL_PRE_SNIFFS",
     "TOTAL_POST_SNIFFS",
@@ -118,12 +131,14 @@ CORRECT_MAP = {
     5: 0  # 0 is incorrect
 }
 
+
 def repack_data(
     h5_file: DewanH5,
     inhale_counts,
     inhale_latencies,
     inhale_durations,
     trial_lengths: pd.Series,
+    bin_counts: pd.DataFrame,
     output_dir,
     PRE_ODOR_COUNT_TIME_MS,  # noqa: N803
     POST_ODOR_COUNT_TIME_MS,  # noqa: N803
@@ -182,18 +197,21 @@ def repack_data(
     combined_df = pd.concat((combined_df, summary_stats), axis=1)
 
     sheet_4 = output_sheet_4(animal_ID, odor, concentration, trial_type, trial_results, trial_lengths)
+    sheet_5 = output_sheet_5(animal_ID, odor,concentration, trial_type, trial_results, bin_counts)
 
     combined_file_path = output_dir.joinpath(f"{animal_ID}-{concentration}-combined.xlsx")
     sheet_1_path = output_dir.joinpath(f"1_{animal_ID}-{concentration}-sniff_count.xlsx")
     sheet_2_path = output_dir.joinpath(f"2_{animal_ID}-{concentration}-sniff_duration.xlsx")
     sheet_3_path = output_dir.joinpath(f"3_{animal_ID}-{concentration}-ISI.xlsx")
     sheet_4_path = output_dir.joinpath(f"4_{animal_ID}-{concentration}-lengths.xlsx")
+    sheet_5_path = output_dir.joinpath(f"5_{animal_ID}-{concentration}-bins.xlsx")
 
     tpe.queue_save_df(combined_df, combined_file_path)
     tpe.queue_save_df(sheet_1, sheet_1_path)
     tpe.queue_save_df(sheet_2, sheet_2_path)
     tpe.queue_save_df(sheet_3, sheet_3_path)
     tpe.queue_save_df(sheet_4, sheet_4_path)
+    tpe.queue_save_df(sheet_5, sheet_5_path)
 
 
 def unpack_inhale_durations(
@@ -369,6 +387,30 @@ def output_sheet_4(
     sheet_4_df.loc[:, "LEN"] = trial_lengths
 
     return sheet_4_df
+
+def output_sheet_5(
+        animal_ID: int,  # NOQA N803
+        odor: str,
+        concentration: str,
+        trial_type: pd.Series,
+        trial_results: pd.Series,
+        binned_counts: pd.DataFrame,
+):
+
+    sheet_5_df = pd.DataFrame(index=SHEET_5_COLUMNS)
+    for bin, data in binned_counts.T.items():
+        bin_df = pd.DataFrame(index=data.index, columns=SHEET_5_COLUMNS)
+        bin_df.loc[:, "ID"] = animal_ID
+        bin_df.loc[:, "odor"] = odor
+        bin_df.loc[:, "conc"] = concentration[-1]
+        bin_df.loc[:, "type"] = trial_type
+        bin_df.loc[:, "result"] = trial_results
+        bin_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
+        bin_df.loc[:, "bin"] = bin
+        bin_df.loc[:, "count"] = data
+        sheet_5_df = pd.concat((sheet_5_df, bin_df.T), axis=1)
+
+    return sheet_5_df.T.sort_index(inplace=False)
 
 def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
     trial_name = trial_df.index.get_level_values(0).unique()[0]
