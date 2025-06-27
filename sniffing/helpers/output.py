@@ -3,6 +3,8 @@ import numpy as np
 from dewan_h5 import DewanH5
 from dewan_utils.async_io import AsyncIO
 
+pd.options.mode.copy_on_write = True
+
 COLUMNS = [
     # Repeating Data
     "ID",
@@ -54,6 +56,20 @@ SHEET_2_COLUMNS = [
     "pre-post",
     "sniff_num",
     "duration"
+]
+
+SHEET_3_COLUMNS = [
+    # Repeating Data
+    "ID",
+    "odor",
+    "conc",
+    # Trial Data
+    "type",
+    "result",
+    "correct",
+    # ISI
+    "NUM",
+    "ISI"
 ]
 
 SUMMARY_COLUMN = [
@@ -127,6 +143,10 @@ def repack_data(
 
     inhale_latencies.index = ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]
 
+    sheet_3 = output_sheet_3(
+        animal_ID, odor, concentration, trial_type, trial_results, inhale_latencies
+    )
+
     combined_df.loc[:, ["pre_odor_sniffs", "post_odor_sniffs"]] = inhale_counts.T
     combined_df.loc[:, ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]] = (
         inhale_latencies.T
@@ -153,10 +173,12 @@ def repack_data(
     combined_file_path = output_dir.joinpath(f"{animal_ID}-{concentration}-combined.xlsx")
     sheet_1_path = output_dir.joinpath(f"1_{animal_ID}-{concentration}-sniff_count.xlsx")
     sheet_2_path = output_dir.joinpath(f"2_{animal_ID}-{concentration}-sniff_duration.xlsx")
+    sheet_3_path = output_dir.joinpath(f"3_{animal_ID}-{concentration}-ISI.xlsx")
 
     tpe.queue_save_df(combined_df, combined_file_path)
     tpe.queue_save_df(sheet_1, sheet_1_path)
     tpe.queue_save_df(sheet_2, sheet_2_path)
+    tpe.queue_save_df(sheet_3, sheet_3_path)
 
 
 def unpack_inhale_durations(
@@ -262,7 +284,54 @@ def output_sheet_2(
 
     return sheet_2_df.T.sort_index(inplace=False)
 
+def output_sheet_3(
+        animal_ID: int,  # NOQA N803
+        odor: str,
+        concentration: str,
+        trial_type: pd.Series,
+        trial_results: pd.Series,
+        inhale_latencies: pd.DataFrame,
+):
 
+    ISI_1 = inhale_latencies.loc["sniff_1_latency", :]
+    ISI_2 = inhale_latencies.loc["sniff_2_latency", :] - inhale_latencies.loc["sniff_1_latency", :]
+    ISI_3 = inhale_latencies.loc["sniff_3_latency", :] - inhale_latencies.loc["sniff_2_latency", :]
+    ISI_1.loc[ISI_1 <= 0] = np.nan
+    ISI_2.loc[ISI_2 <= 0] = np.nan
+    ISI_3.loc[ISI_3 <= 0] = np.nan
+    #NUM, ISI
+    ISI_1_df = pd.DataFrame(index=inhale_latencies.columns, columns=SHEET_3_COLUMNS)
+    ISI_1_df.loc[:, "ID"] = animal_ID
+    ISI_1_df.loc[:, "odor"] = odor
+    ISI_1_df.loc[:, "conc"] = concentration[-1]
+    ISI_1_df.loc[:, "type"] = trial_type
+    ISI_1_df.loc[:, "result"] = trial_results
+    ISI_1_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
+    ISI_1_df.loc[:, "NUM"] = 1
+    ISI_1_df.loc[:, "ISI"] = ISI_1.to_numpy()
+
+    ISI_2_df = pd.DataFrame(index=inhale_latencies.columns, columns=SHEET_3_COLUMNS)
+    ISI_2_df.loc[:, "ID"] = animal_ID
+    ISI_2_df.loc[:, "odor"] = odor
+    ISI_2_df.loc[:, "conc"] = concentration[-1]
+    ISI_2_df.loc[:, "type"] = trial_type
+    ISI_2_df.loc[:, "result"] = trial_results
+    ISI_2_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
+    ISI_2_df.loc[:, "NUM"] = 2
+    ISI_2_df.loc[:, "ISI"] = ISI_2.to_numpy()
+
+    ISI_3_df = pd.DataFrame(index=inhale_latencies.columns, columns=SHEET_3_COLUMNS)
+    ISI_3_df.loc[:, "ID"] = animal_ID
+    ISI_3_df.loc[:, "odor"] = odor
+    ISI_3_df.loc[:, "conc"] = concentration[-1]
+    ISI_3_df.loc[:, "type"] = trial_type
+    ISI_3_df.loc[:, "result"] = trial_results
+    ISI_3_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
+    ISI_3_df.loc[:, "NUM"] = 3
+    ISI_3_df.loc[:, "ISI"] = ISI_3.to_numpy()
+
+    sheet_3_df = pd.concat((ISI_1_df.T, ISI_2_df.T, ISI_3_df.T), axis=1).T
+    return sheet_3_df.sort_index(inplace=False)
 
 
 def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
