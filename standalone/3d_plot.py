@@ -91,12 +91,22 @@ def main():
         bottom=1.6,
         label="Isobutanol Sniffing",
     )
-
+    ax.errorbar(
+        isb_threshold_ppm_log10,
+        ISB_MARKER_Y,
+        isb_threshold_sniffs,
+        isb_threshold_sniffs_SEM,
+        fmt="none",
+        capsize=3.0,
+        ecolor="blue",
+    )
 
     markerline.set_markerfacecolor("blue")
     markerline.set_markeredgecolor("blue")
     stemlines.set_color("blue")
-    baseline.set_color((0,0,0,0))
+    stemlines.set_linewidth(0.5)
+    baseline.set_color((0, 0, 0, 0))
+
     SBA_Y_GEN = np.vectorize(
         lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x)
     )(X_GEN)
@@ -115,10 +125,21 @@ def main():
         bottom=1.6,
         label="Sec Butyl Acetate Sniffing",
     )
-    markerline.set_markerfacecolor("green")
-    markerline.set_markeredgecolor("green")
-    stemlines.set_color("green")
-    baseline.set_color((0,0,0,0))
+    ax2.errorbar(
+        sba_threshold_ppm_log10,
+        SBA_MARKER_Y,
+        sba_threshold_sniffs,
+        sba_threshold_sniffs_SEM,
+        fmt="none",
+        capsize=3.0,
+        ecolor="blue",
+    )
+
+    markerline.set_markerfacecolor("blue")
+    markerline.set_markeredgecolor("blue")
+    stemlines.set_color("blue")
+    stemlines.set_linewidth(0.5)
+    baseline.set_color((0, 0, 0, 0))
 
     ax.legend()
     ax2.legend()
