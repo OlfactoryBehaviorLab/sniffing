@@ -42,12 +42,12 @@ def main():
     isb_threshold_ppm = data["Isobutanol"]["X"]
     isb_threshold_ppm_log10 = np.log10(isb_threshold_ppm)
     isb_threshold_sniffs = data["Isobutanol"]["Z"]
-    isb_threshold_perf_SEM = data["Isobutanol"]["Y_SEM"]
+    isb_threshold_sniffs_SEM = data["Isobutanol"]["Z_SEM"]
 
     sba_threshold_ppm = data["Sec-Butyl-Acetate"]["X"]
     sba_threshold_ppm_log10 = np.log10(sba_threshold_ppm)
     sba_threshold_sniffs = data["Sec-Butyl-Acetate"]["Z"]
-    sba_threshold_perf_SEM = data["Sec-Butyl-Acetate"]["Y_SEM"]
+    sba_threshold_sniffs_SEM = data["Sec-Butyl-Acetate"]["Z_SEM"]
 
     fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
     fig2, ax2 = plt.subplots(subplot_kw={'projection': '3d'})
@@ -71,6 +71,11 @@ def main():
     # Since matplotlib doesn't support log-scale in 3D
     # Workaround by https://github.com/matplotlib/matplotlib/issues/209#issuecomment-836684647
 
+    X_GEN = np.logspace(-6, 3, 100, base=10, dtype=float)
+    ISB_Y_GEN = np.vectorize(
+        lambda x: hill_func(ISB_BOTTOM, ISB_SLOPE, ISB_TOP, ISB_EC50, x)
+    )(X_GEN)
+    ISB_X_GEN_LOG10 = np.log10(X_GEN)
 
     ISB_X_GEN = np.logspace(-6, 3, 100, base=10, dtype=float)
     ISB_Y_GEN = np.vectorize(lambda x: hill_func(ISB_BOTTOM, ISB_SLOPE, ISB_TOP, ISB_EC50, x))(ISB_X_GEN)
@@ -92,6 +97,10 @@ def main():
     markerline.set_markeredgecolor("blue")
     stemlines.set_color("blue")
     baseline.set_color((0,0,0,0))
+    SBA_Y_GEN = np.vectorize(
+        lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x)
+    )(X_GEN)
+    SBA_X_GEN_LOG10 = np.log10(X_GEN)
 
     SBA_X_GEN = np.logspace(-6, 3, 100, base=10, dtype=float)
     SBA_Y_GEN = np.vectorize(lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x))(SBA_X_GEN)
