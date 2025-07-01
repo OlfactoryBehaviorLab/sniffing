@@ -27,6 +27,30 @@ def select_dialog(file=False):
     return _val
 
 
+def get_spss_files(concentration_dir: pathlib.Path, animal) -> Tuple:
+    file1 = _check_exists_or_warn(concentration_dir, '1*count.xlsx', animal)
+    file2 = _check_exists_or_warn(concentration_dir, '2*duration.xlsx', animal)
+    file3 = _check_exists_or_warn(concentration_dir, '3*ISI.xlsx', animal)
+    file4 = _check_exists_or_warn(concentration_dir, '4*lengths.xlsx', animal)
+    file5 = _check_exists_or_warn(concentration_dir, '5*bins.xlsx', animal)
+
+    return file1, file2, file3, file4, file5
+
+
+def _check_exists_or_warn(conc_dir: pathlib.Path, file_name: str, animal: str):
+    glob_list = list(conc_dir.glob(file_name))
+
+    if not glob_list:
+        warnings.warn(
+            f"{conc_dir.name}-{animal} is missing {file_name}! Skipping...",
+            stacklevel=2,
+        )
+        return None
+    else:
+        return glob_list[0]
+
+
+
 def main():
     data_dir = None
     file_path = None
