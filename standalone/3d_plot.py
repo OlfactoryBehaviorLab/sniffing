@@ -33,22 +33,33 @@ def main():
     # Since matplotlib doesn't support log-scale in 3D
     # Workaround by https://github.com/matplotlib/matplotlib/issues/209#issuecomment-836684647
 
-    ax.set_zlim(0, 3)
+    fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
 
+    ax.view_init(elev=20)
+    ax.set_zlim(1.6, 2.6)
     ax.set_xlabel("Concentration (ppm)")
     ax.set_ylabel("Behavioral Performance")
     ax.set_zlabel("Sniff Count")
 
-    # ax.plot(isb_threshold_ppm_log10, isb_threshold_perf, c='magenta', label='Isobutanol Performance')
+    ax.xaxis.set_major_formatter(FuncFormatter(log_tick_formatter))
+    # Since matplotlib doesn't support log-scale in 3D
+    # Workaround by https://github.com/matplotlib/matplotlib/issues/209#issuecomment-836684647
+
     markerline, stemlines, baseline = ax.stem(
         isb_threshold_ppm_log10,
         isb_threshold_perf,
         isb_threshold_sniffs,
+        bottom=1.6,
         label="Isobutanol Performance",
     )
-    baseline.set_color('m')
+
+    markerline.set_markerfacecolor("blue")
+    markerline.set_markeredgecolor("blue")
+    stemlines.set_color("blue")
+    baseline.set_color('#FF6000')
     baseline.set_linewidth(2)
     ax.legend()
+    plt.tight_layout()
     plt.show(dpi=600)
 
 
