@@ -7,6 +7,7 @@ from pathlib import Path
 import itertools
 
 FILE_PATH = "/mnt/r2d2/5_Projects/1_Sniffing/3d_graph.xlsx"
+OUT_PATH = "/mnt/r2d2/5_Projects/1_Sniffing/figures"
 ISB_BOTTOM = 51.85
 ISB_SLOPE = 1.813
 ISB_TOP = 93.31
@@ -31,6 +32,9 @@ def log_tick_formatter(val, pos=None):
 
 
 def main():
+    output_path = Path(OUT_PATH)
+    output_path.mkdir(parents=True, exist_ok=True)
+
     data = pd.read_excel(FILE_PATH)
     odors = ["Isobutanol", "Sec-Butyl-Acetate"]
     col_labels = ["X", "X_SEM", "Y", "Y_SEM", "Z", "Z_SEM"]
@@ -147,6 +151,11 @@ def main():
     fig.tight_layout()
     fig2.tight_layout()
     plt.show(dpi=600)
+
+    fig_path = output_path.joinpath("3D_ISB.pdf")
+    fig.savefig(fig_path, dpi=600)
+    fig2_path = output_path.joinpath("3D_SBA.pdf")
+    fig2.savefig(fig2_path, dpi=600)
 
 
 if __name__ == "__main__":
