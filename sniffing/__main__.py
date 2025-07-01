@@ -1,8 +1,11 @@
 import argparse
 import os
+import pathlib
 import sys
 import warnings
 import logging
+from typing import Tuple
+
 import pandas as pd
 from PySide6.QtWidgets import QFileDialog, QApplication
 from pathlib import Path
@@ -200,31 +203,26 @@ def main():
                 windowed_bin_counts = concentration_dir.joinpath(
                     "binned_sniff_counts.xlsx"
                 )
-                combined_data_matrix = list(concentration_dir.glob("*TrialParams.xlsx"))
+                combined_data_matrix = _check_exists_or_warn(concentration_dir, "*TrialParams.xlsx", animal_dir.name)
 
-                if not combined_data_matrix:
-                    warnings.warn(
-                        f"{concentration_dir.name}-{animal_dir.name} is missing TrialParams.xlsx! Skipping...",
-                        stacklevel=2,
-                    )
+                if combined_data_matrix is None:
                     continue
-                else:
-                    combined_data_matrix = combined_data_matrix[0]
 
-                all_traces = list(concentration_dir.glob("all_trimmed_traces.xlsx"))
-                if not all_traces:
-                    warnings.warn(
-                        f"{concentration_dir.name}-{animal_dir.name} is missing all_trimmed_traces.xlsx! Skipping...",
-                        stacklevel=2,
-                    )
+                all_traces = _check_exists_or_warn(concentration_dir, "all_trimmed_traces.xlsx", animal_dir.name)
+                if all_traces is None:
                     continue
-                else:
-                    all_traces = all_traces[0]
+
+                file1, file2, file3, file4, file5 = get_spss_files(concentration_dir, animal_dir.name)
 
                 concentration_files[concentration_dir.name][animal_dir.name] = {
                     "combined": combined_data_matrix,
                     "window": windowed_bin_counts,
                     "traces": all_traces,
+                    "1": file1,
+                    "2": file2,
+                    "3": file3,
+                    "4": file4,
+                    "5": file5
                 }
 
         process_combined(concentration_files, output_dir)
