@@ -18,10 +18,11 @@ SBA_SLOPE = 0.6276
 SBA_TOP = 97.83
 SBA_EC50 = 0.01549
 
+
 def hill_func(bottom: float, slope: float, top: float, ec50: float, x: float) -> float:
     exponent = np.power(x, slope)
     frac_top = np.subtract(top, bottom)
-    frac_bottom = (exponent + np.power(ec50, slope))
+    frac_bottom = exponent + np.power(ec50, slope)
     frac = np.divide(frac_top, frac_bottom)
     mult = np.multiply(exponent, frac)
     return bottom + mult
@@ -53,8 +54,8 @@ def main():
     sba_threshold_sniffs = data["Sec-Butyl-Acetate"]["Z"]
     sba_threshold_sniffs_SEM = data["Sec-Butyl-Acetate"]["Z_SEM"]
 
-    fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
-    fig2, ax2 = plt.subplots(subplot_kw={'projection': '3d'})
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    fig2, ax2 = plt.subplots(subplot_kw={"projection": "3d"})
 
     ax.view_init(elev=20)
     ax.set_ylim(50, 100)
@@ -80,14 +81,17 @@ def main():
         lambda x: hill_func(ISB_BOTTOM, ISB_SLOPE, ISB_TOP, ISB_EC50, x)
     )(X_GEN)
     ISB_X_GEN_LOG10 = np.log10(X_GEN)
+    ax.plot(
+        ISB_X_GEN_LOG10,
+        ISB_Y_GEN,
+        zs=1.6,
+        color="#FF6000",
+        label="Isobutanol Performance",
+    )
 
-    ISB_X_GEN = np.logspace(-6, 3, 100, base=10, dtype=float)
-    ISB_Y_GEN = np.vectorize(lambda x: hill_func(ISB_BOTTOM, ISB_SLOPE, ISB_TOP, ISB_EC50, x))(ISB_X_GEN)
-    ISB_X_GEN_LOG10 = np.log10(ISB_X_GEN)
-    ax.plot(ISB_X_GEN_LOG10, ISB_Y_GEN, zs=1.6, color="#FF6000",label="Isobutanol Performance")
-
-    ISB_MARKER_Y = np.vectorize(lambda x: hill_func(ISB_BOTTOM, ISB_SLOPE, ISB_TOP, ISB_EC50, x))(isb_threshold_ppm)
-    ax.fill_between(x1=isb_threshold_ppm_log10, x2=isb_threshold_ppm_log10, y1=ISB_MARKER_Y+isb_threshold_perf_SEM,  y2=ISB_MARKER_Y-isb_threshold_perf_SEM, z1=1.6, z2=1.6, alpha=0.4, color="#FF6000")
+    ISB_MARKER_Y = np.vectorize(
+        lambda x: hill_func(ISB_BOTTOM, ISB_SLOPE, ISB_TOP, ISB_EC50, x)
+    )(isb_threshold_ppm)
     markerline, stemlines, baseline = ax.stem(
         isb_threshold_ppm_log10,
         ISB_MARKER_Y,
@@ -115,13 +119,18 @@ def main():
         lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x)
     )(X_GEN)
     SBA_X_GEN_LOG10 = np.log10(X_GEN)
+    ax2.plot(
+        SBA_X_GEN_LOG10,
+        SBA_Y_GEN,
+        zs=1.6,
+        color="#76069A",
+        label="Sec Butyl Acetate Performance",
+    )
 
-    SBA_X_GEN = np.logspace(-6, 3, 100, base=10, dtype=float)
-    SBA_Y_GEN = np.vectorize(lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x))(SBA_X_GEN)
-    SBA_X_GEN_LOG10 = np.log10(SBA_X_GEN)
-    ax2.plot(SBA_X_GEN_LOG10, SBA_Y_GEN, zs=1.6, color="#76069A",label="Sec Butyl Acetate Performance")
+    SBA_MARKER_Y = np.vectorize(
+        lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x)
+    )(sba_threshold_ppm)
 
-    SBA_MARKER_Y = np.vectorize(lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x))(sba_threshold_ppm)
     markerline, stemlines, baseline = ax2.stem(
         sba_threshold_ppm_log10,
         SBA_MARKER_Y,
