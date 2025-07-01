@@ -12,6 +12,11 @@ ISB_SLOPE = 1.813
 ISB_TOP = 93.31
 ISB_EC50 = 0.06146
 
+SBA_BOTTOM = 49.75
+SBA_SLOPE = 0.6276
+SBA_TOP = 97.83
+SBA_EC50 = 0.01549
+
 def hill_func(bottom: float, slope: float, top: float, ec50: float, x: float) -> float:
     exponent = np.power(x, slope)
     frac_top = np.subtract(top, bottom)
@@ -39,11 +44,13 @@ def main():
     isb_threshold_sniffs = data["Isobutanol"]["Z"]
     isb_threshold_perf_SEM = data["Isobutanol"]["Y_SEM"]
 
-    ax.xaxis.set_major_formatter(FuncFormatter(log_tick_formatter))
-    # Since matplotlib doesn't support log-scale in 3D
-    # Workaround by https://github.com/matplotlib/matplotlib/issues/209#issuecomment-836684647
+    sba_threshold_ppm = data["Sec-Butyl-Acetate"]["X"]
+    sba_threshold_ppm_log10 = np.log10(sba_threshold_ppm)
+    sba_threshold_sniffs = data["Sec-Butyl-Acetate"]["Z"]
+    sba_threshold_perf_SEM = data["Sec-Butyl-Acetate"]["Y_SEM"]
 
     fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
+    fig2, ax2 = plt.subplots(subplot_kw={'projection': '3d'})
 
     ax.view_init(elev=20)
     ax.set_ylim(50, 100)
@@ -52,7 +59,15 @@ def main():
     ax.set_ylabel("Behavioral Performance")
     ax.set_zlabel("Sniff Count")
 
+    ax2.view_init(elev=20)
+    ax2.set_ylim(50, 100)
+    ax2.set_zlim(1.6, 2.6)
+    ax2.set_xlabel("Concentration (ppm)")
+    ax2.set_ylabel("Behavioral Performance")
+    ax2.set_zlabel("Sniff Count")
+
     ax.xaxis.set_major_formatter(FuncFormatter(log_tick_formatter))
+    ax2.xaxis.set_major_formatter(FuncFormatter(log_tick_formatter))
     # Since matplotlib doesn't support log-scale in 3D
     # Workaround by https://github.com/matplotlib/matplotlib/issues/209#issuecomment-836684647
 
@@ -78,9 +93,29 @@ def main():
     stemlines.set_color("blue")
     baseline.set_color((0,0,0,0))
 
+    SBA_X_GEN = np.logspace(-6, 3, 100, base=10, dtype=float)
+    SBA_Y_GEN = np.vectorize(lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x))(SBA_X_GEN)
+    SBA_X_GEN_LOG10 = np.log10(SBA_X_GEN)
+    ax2.plot(SBA_X_GEN_LOG10, SBA_Y_GEN, zs=1.6, color="#76069A",label="Sec Butyl Acetate Performance")
+
+    SBA_MARKER_Y = np.vectorize(lambda x: hill_func(SBA_BOTTOM, SBA_SLOPE, SBA_TOP, SBA_EC50, x))(sba_threshold_ppm)
+    markerline, stemlines, baseline = ax2.stem(
+        sba_threshold_ppm_log10,
+        SBA_MARKER_Y,
+        sba_threshold_sniffs,
+        bottom=1.6,
+        label="Sec Butyl Acetate Sniffing",
+    )
+    markerline.set_markerfacecolor("green")
+    markerline.set_markeredgecolor("green")
+    stemlines.set_color("green")
+    baseline.set_color((0,0,0,0))
+
     ax.legend()
-    plt.tight_layout()
+    ax2.legend()
+
     fig.tight_layout()
+    fig2.tight_layout()
     plt.show(dpi=600)
 
 
