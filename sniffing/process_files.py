@@ -1,5 +1,4 @@
 import logging
-import os
 
 from dewan_h5 import DewanH5
 from dewan_manual_curation import manual_curation
@@ -23,7 +22,7 @@ BIN_STEPS = 50  # ms
 PRE_ODOR_COUNT_TIME_MS = -350
 POST_ODOR_COUNT_TIME_MS = 350
 
-#logging.basicConfig(level=logging.WARNING)
+# logging.basicConfig(level=logging.WARNING)
 plt.set_loglevel(level="warning")
 
 
@@ -41,7 +40,7 @@ def process_files(
     tpe = async_io.AsyncIO(logger=logger)
     if not h5_files:
         logger.error("No H5 Files provided!", h5_files)
-        return
+        return None
     for h5_file_path in tqdm(
         h5_files, total=len(h5_files), desc="Processing H5 Files:"
     ):
@@ -251,7 +250,7 @@ def process_files(
                     file_output_dir,
                     PRE_ODOR_COUNT_TIME_MS,
                     POST_ODOR_COUNT_TIME_MS,
-                    tpe
+                    tpe,
                 )
                 h5.export(file_output_dir)
 

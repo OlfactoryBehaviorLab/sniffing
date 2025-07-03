@@ -54,8 +54,6 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
 
         animal_files = concentration_files[concentration]
 
-
-
         for animal in animal_files:
             animal_data_matrix = pd.read_excel(
                 animal_files[animal]["combined"], index_col=[0]
@@ -68,29 +66,19 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
             )
 
             if animal_files[animal]["1"] is not None:
-                file1_df = pd.read_excel(
-                    animal_files[animal]["1"], index_col=[0]
-                )
+                file1_df = pd.read_excel(animal_files[animal]["1"], index_col=[0])
                 all_f1_df = pd.concat((all_f1_df, file1_df.T), axis=1)
             if animal_files[animal]["2"] is not None:
-                file2_df = pd.read_excel(
-                    animal_files[animal]["2"], index_col=[0]
-                )
+                file2_df = pd.read_excel(animal_files[animal]["2"], index_col=[0])
                 all_f2_df = pd.concat((all_f2_df, file2_df.T), axis=1)
             if animal_files[animal]["3"] is not None:
-                file3_df = pd.read_excel(
-                    animal_files[animal]["3"], index_col=[0]
-                )
+                file3_df = pd.read_excel(animal_files[animal]["3"], index_col=[0])
                 all_f3_df = pd.concat((all_f3_df, file3_df.T), axis=1)
             if animal_files[animal]["4"] is not None:
-                file4_df = pd.read_excel(
-                    animal_files[animal]["4"], index_col=[0]
-                )
+                file4_df = pd.read_excel(animal_files[animal]["4"], index_col=[0])
                 all_f4_df = pd.concat((all_f4_df, file4_df.T), axis=1)
             if animal_files[animal]["5"] is not None:
-                file5_df = pd.read_excel(
-                    animal_files[animal]["5"], index_col=[0]
-                )
+                file5_df = pd.read_excel(animal_files[animal]["5"], index_col=[0])
                 all_f5_df = pd.concat((all_f5_df, file5_df.T), axis=1)
 
             good_trials = windowed_bin_counts.columns
@@ -180,8 +168,8 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     #         shuffled_scores.to_numpy().round(3)
     #     )
 
-    all_scores_path = output_dir.joinpath("all_scores.xlsx")
-    all_individual_scores_path = output_dir.joinpath("all_individual_scores.xlsx")
+    # all_scores_path = output_dir.joinpath("all_scores.xlsx")
+    # all_individual_scores_path = output_dir.joinpath("all_individual_scores.xlsx")
 
     f1_path = output_dir.joinpath("combined_count.xlsx")
     f2_path = output_dir.joinpath("combined_duration.xlsx")

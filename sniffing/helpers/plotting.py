@@ -122,7 +122,6 @@ def plot_traces(
     filtered_trace,
     lick_timestamps,
     true_inhales,
-    all_inhales,
     all_exhales,
     trial_number,
     output_dir=None,
@@ -131,7 +130,9 @@ def plot_traces(
 ):
     fig, axs = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
     plt.suptitle(
-        f"Raw vs. Filtered Trace | Trial: {trial_number}", fontsize=16, fontweight="bold"
+        f"Raw vs. Filtered Trace | Trial: {trial_number}",
+        fontsize=16,
+        fontweight="bold",
     )
     _ = axs[0].title.set_text("Raw Trace")
     _ = axs[0].plot(raw_trace, color="k")
@@ -145,20 +146,37 @@ def plot_traces(
     _ = axs[1].set_ylabel("Signal (Standard Deviations)")
     _ = axs[1].set_xlabel("Time Relative to Odor Onset (ms)")
     _ = axs[1].scatter(
-        all_exhales, all_exhales.index, marker="*", color="red", s=50, zorder=3, label="exhale"
+        all_exhales,
+        all_exhales.index,
+        marker="*",
+        color="red",
+        s=50,
+        zorder=3,
+        label="exhale",
     )
     _ = axs[1].scatter(
-        true_inhales.index, true_inhales, marker="*", color="m", s=50, zorder=3, label="inhale"
+        true_inhales.index,
+        true_inhales,
+        marker="*",
+        color="m",
+        s=50,
+        zorder=3,
+        label="inhale",
     )
 
     max_y = max(filtered_trace)
     _trimmed_lick_timestamps = np.intersect1d(filtered_trace.index, lick_timestamps)
     # Don't plot any licks after the sniff data is done
     _ = axs[1].vlines(
-        x=_trimmed_lick_timestamps, ymin=max_y * 0.9, ymax=max_y, zorder=10, color="r", label="sniffs"
+        x=_trimmed_lick_timestamps,
+        ymin=max_y * 0.9,
+        ymax=max_y,
+        zorder=10,
+        color="r",
+        label="sniffs",
     )
 
-    fig.legend(fontsize=12, bbox_to_anchor=(.988, 1))
+    fig.legend(fontsize=12, bbox_to_anchor=(0.988, 1))
     plt.tight_layout()
 
     if display:

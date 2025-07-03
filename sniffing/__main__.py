@@ -12,6 +12,7 @@ from pathlib import Path
 
 from sniffing.process_files import process_files
 from sniffing.combined import process_combined
+
 DEFAULT_DIR = Path("/mnt/r2d2/5_Projects/Concentration_Sniffing_Dynamics/Raw_Data")
 
 logging.basicConfig(level=logging.DEBUG)
@@ -31,11 +32,11 @@ def select_dialog(file=False):
 
 
 def get_spss_files(concentration_dir: pathlib.Path, animal) -> Tuple:
-    file1 = _check_exists_or_warn(concentration_dir, '1*count.xlsx', animal)
-    file2 = _check_exists_or_warn(concentration_dir, '2*duration.xlsx', animal)
-    file3 = _check_exists_or_warn(concentration_dir, '3*ISI.xlsx', animal)
-    file4 = _check_exists_or_warn(concentration_dir, '4*lengths.xlsx', animal)
-    file5 = _check_exists_or_warn(concentration_dir, '5*bins.xlsx', animal)
+    file1 = _check_exists_or_warn(concentration_dir, "1*count.xlsx", animal)
+    file2 = _check_exists_or_warn(concentration_dir, "2*duration.xlsx", animal)
+    file3 = _check_exists_or_warn(concentration_dir, "3*ISI.xlsx", animal)
+    file4 = _check_exists_or_warn(concentration_dir, "4*lengths.xlsx", animal)
+    file5 = _check_exists_or_warn(concentration_dir, "5*bins.xlsx", animal)
 
     return file1, file2, file3, file4, file5
 
@@ -49,9 +50,8 @@ def _check_exists_or_warn(conc_dir: pathlib.Path, file_name: str, animal: str):
             stacklevel=2,
         )
         return None
-    else:
-        return glob_list[0]
 
+    return glob_list[0]
 
 
 def main():
@@ -203,16 +203,22 @@ def main():
                 windowed_bin_counts = concentration_dir.joinpath(
                     "binned_sniff_counts.xlsx"
                 )
-                combined_data_matrix = _check_exists_or_warn(concentration_dir, "*TrialParams.xlsx", animal_dir.name)
+                combined_data_matrix = _check_exists_or_warn(
+                    concentration_dir, "*TrialParams.xlsx", animal_dir.name
+                )
 
                 if combined_data_matrix is None:
                     continue
 
-                all_traces = _check_exists_or_warn(concentration_dir, "all_trimmed_traces.xlsx", animal_dir.name)
+                all_traces = _check_exists_or_warn(
+                    concentration_dir, "all_trimmed_traces.xlsx", animal_dir.name
+                )
                 if all_traces is None:
                     continue
 
-                file1, file2, file3, file4, file5 = get_spss_files(concentration_dir, animal_dir.name)
+                file1, file2, file3, file4, file5 = get_spss_files(
+                    concentration_dir, animal_dir.name
+                )
 
                 concentration_files[concentration_dir.name][animal_dir.name] = {
                     "combined": combined_data_matrix,
@@ -222,7 +228,7 @@ def main():
                     "2": file2,
                     "3": file3,
                     "4": file4,
-                    "5": file5
+                    "5": file5,
                 }
 
         process_combined(concentration_files, output_dir)

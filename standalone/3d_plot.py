@@ -1,10 +1,9 @@
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # NOQA N999
 from matplotlib.ticker import FuncFormatter
 import pandas as pd
 import numpy as np
 
 from pathlib import Path
-import itertools
 
 FILE_PATH = "/mnt/r2d2/5_Projects/1_Sniffing/3d_graph.xlsx"
 OUT_PATH = "/mnt/r2d2/5_Projects/1_Sniffing/figures"
@@ -28,7 +27,7 @@ def hill_func(bottom: float, slope: float, top: float, ec50: float, x: float) ->
     return bottom + mult
 
 
-def log_tick_formatter(val, pos=None):
+def log_tick_formatter(val):
     return r"$10^{{{:.0f}}}$".format(val)
 
 
