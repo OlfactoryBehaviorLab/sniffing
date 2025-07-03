@@ -227,7 +227,6 @@ def process_files(
                             filtered_trimmed_trace,
                             h5.lick1[trial_number],
                             true_inhales,
-                            inhales,
                             exhales,
                             trial_number,
                             plot_output_dir,
