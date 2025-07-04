@@ -27,7 +27,7 @@ def hill_func(bottom: float, slope: float, top: float, ec50: float, x: float) ->
     return bottom + mult
 
 
-def log_tick_formatter(val):
+def log_tick_formatter(val, pos=None):
     return r"$10^{{{:.0f}}}$".format(val)
 
 
