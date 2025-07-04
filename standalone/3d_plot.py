@@ -17,6 +17,7 @@ SBA_SLOPE = 0.6276
 SBA_TOP = 97.83
 SBA_EC50 = 0.01549
 
+BIN_SIZE_S = 0.35
 
 def hill_func(bottom: float, slope: float, top: float, ec50: float, x: float) -> float:
     exponent = np.power(x, slope)
@@ -45,30 +46,30 @@ def main():
 
     isb_threshold_ppm = data["Isobutanol"]["X"]
     isb_threshold_ppm_log10 = np.log10(isb_threshold_ppm)
-    isb_threshold_sniffs = data["Isobutanol"]["Z"]
-    isb_threshold_sniffs_SEM = data["Isobutanol"]["Z_SEM"]
+    isb_threshold_sniffs = data["Isobutanol"]["Z"] / BIN_SIZE_S
+    isb_threshold_sniffs_SEM = data["Isobutanol"]["Z_SEM"] / BIN_SIZE_S
 
     sba_threshold_ppm = data["Sec-Butyl-Acetate"]["X"]
     sba_threshold_ppm_log10 = np.log10(sba_threshold_ppm)
-    sba_threshold_sniffs = data["Sec-Butyl-Acetate"]["Z"]
-    sba_threshold_sniffs_SEM = data["Sec-Butyl-Acetate"]["Z_SEM"]
+    sba_threshold_sniffs = data["Sec-Butyl-Acetate"]["Z"] / BIN_SIZE_S
+    sba_threshold_sniffs_SEM = data["Sec-Butyl-Acetate"]["Z_SEM"] / BIN_SIZE_S
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     fig2, ax2 = plt.subplots(subplot_kw={"projection": "3d"})
 
     ax.view_init(elev=20)
     ax.set_ylim(50, 100)
-    ax.set_zlim(1.6, 2.6)
+    ax.set_zlim(5, 7.2)
     ax.set_xlabel("Concentration (ppm)")
     ax.set_ylabel("Behavioral Performance")
-    ax.set_zlabel("Sniff Count")
+    ax.set_zlabel("Sniff Frequency (Hz)")
 
     ax2.view_init(elev=20)
     ax2.set_ylim(50, 100)
-    ax2.set_zlim(1.6, 2.6)
+    ax2.set_zlim(5, 7.2)
     ax2.set_xlabel("Concentration (ppm)")
     ax2.set_ylabel("Behavioral Performance")
-    ax2.set_zlabel("Sniff Count")
+    ax2.set_zlabel("Sniff Frequency (Hz)")
 
     ax.xaxis.set_major_formatter(FuncFormatter(log_tick_formatter))
     ax2.xaxis.set_major_formatter(FuncFormatter(log_tick_formatter))
@@ -83,7 +84,7 @@ def main():
     ax.plot(
         ISB_X_GEN_LOG10,
         ISB_Y_GEN,
-        zs=1.6,
+        zs=5,
         color="#FF6000",
         label="Isobutanol Performance",
     )
@@ -95,7 +96,7 @@ def main():
         isb_threshold_ppm_log10,
         ISB_MARKER_Y,
         isb_threshold_sniffs,
-        bottom=1.6,
+        bottom=5,
         label="Isobutanol Sniffing",
     )
     ax.errorbar(
@@ -121,7 +122,7 @@ def main():
     ax2.plot(
         SBA_X_GEN_LOG10,
         SBA_Y_GEN,
-        zs=1.6,
+        zs=5,
         color="#76069A",
         label="Sec Butyl Acetate Performance",
     )
@@ -134,7 +135,7 @@ def main():
         sba_threshold_ppm_log10,
         SBA_MARKER_Y,
         sba_threshold_sniffs,
-        bottom=1.6,
+        bottom=5,
         label="Sec Butyl Acetate Sniffing",
     )
     ax2.errorbar(
@@ -160,9 +161,9 @@ def main():
     fig2.tight_layout()
     plt.show(dpi=600)
 
-    fig_path = output_path.joinpath("3D_ISB.pdf")
+    fig_path = output_path.joinpath("3D_ISB_freq.pdf")
     fig.savefig(fig_path, dpi=600)
-    fig2_path = output_path.joinpath("3D_SBA.pdf")
+    fig2_path = output_path.joinpath("3D_SBA_freq.pdf")
     fig2.savefig(fig2_path, dpi=600)
 
 
