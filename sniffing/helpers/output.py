@@ -196,6 +196,9 @@ def repack_data(
         animal_ID, odor, concentration, trial_type, trial_results, bin_counts
     )
 
+    sheet_6 = output_sheet_6(animal_ID, odor, concentration, trial_type, trial_results, all_sniff_durations)
+    sheet_6_correct_nogo = output_sheet_6(animal_ID, odor, concentration, trial_type, trial_results, correct_nogo_durations)
+
     sheet_1_path = output_dir.joinpath(
         f"1_{animal_ID}-{concentration}-sniff_count.xlsx"
     )
@@ -205,12 +208,16 @@ def repack_data(
     sheet_3_path = output_dir.joinpath(f"3_{animal_ID}-{concentration}-ISI.xlsx")
     sheet_4_path = output_dir.joinpath(f"4_{animal_ID}-{concentration}-lengths.xlsx")
     sheet_5_path = output_dir.joinpath(f"5_{animal_ID}-{concentration}-bins.xlsx")
+    sheet_6_path = output_dir.joinpath(f"6_{animal_ID}-{concentration}-all_sniff_durs.xlsx")
+    sheet_6_correct_nogo_path = output_dir.joinpath(f"6_{animal_ID}-{concentration}-all_sniff_durs_correct_nogo.xlsx")
 
     tpe.queue_save_df(sheet_1, sheet_1_path)
     tpe.queue_save_df(sheet_2, sheet_2_path)
     tpe.queue_save_df(sheet_3, sheet_3_path)
     tpe.queue_save_df(sheet_4, sheet_4_path)
     tpe.queue_save_df(sheet_5, sheet_5_path)
+    tpe.queue_save_df(sheet_6, sheet_6_path)
+    tpe.queue_save_df(sheet_6_correct_nogo, sheet_6_correct_nogo_path)
 
 
 def unpack_all_durations(
@@ -236,8 +243,9 @@ def unpack_all_durations(
         pre_fv_sniff_dur = dur[pre_FV_ts & good_dur]
         post_fv_sniff_dur = dur[post_FV_ts & good_dur]
 
-        dur_index = np.arange(-pre_fv_sniff_dur.shape[0], post_fv_sniff_dur.shape[0])
-        durations = pd.Series(np.hstack((pre_fv_sniff_dur, post_fv_sniff_dur)), index=dur_index, name=trial)
+        dur_index_pre = np.arange(-pre_fv_sniff_dur.shape[0], 0)
+        dur_index_post = np.arange(1, post_fv_sniff_dur.shape[0])
+        durations = pd.Series(np.hstack((pre_fv_sniff_dur, post_fv_sniff_dur)), index=np.hstack((dur_index_pre, dur_index_post)), name=trial)
         all_durations = pd.concat((all_durations, durations), axis=1)
 
     return all_durations.T
@@ -447,6 +455,34 @@ def output_sheet_5(
         sheet_5_df = pd.concat((sheet_5_df, bin_df.T), axis=1)
 
     return sheet_5_df.T.sort_index(inplace=False)
+
+
+def output_sheet_6(
+        animal_ID: int,  # NOQA N803
+        odor: str,
+        concentration: str,
+        trial_type: pd.Series,
+        trial_results: pd.Series,
+        sniff_durations: pd.DataFrame
+):
+
+    sheet_6_df = pd.DataFrame(index=SHEET_6_COLUMNS)
+
+    for trial, data in sniff_durations.iterrows():
+        trial_df = pd.DataFrame(index=np.repeat(trial, data.shape[0]), columns=SHEET_6_COLUMNS)
+        trial_df.loc[:, "ID"] = animal_ID
+        trial_df.loc[:, "odor"] = odor
+        trial_df.loc[:, "conc"] = concentration[-1]
+        trial_df.loc[:, "type"] = trial_type
+        trial_df.loc[:, "result"] = trial_results
+        trial_df.loc[:, "correct"] = trial_results.replace(CORRECT_MAP)
+        trial_df.loc[:, "sniff_num"] = data.index
+        trial_df.loc[:, "sniff_dur"] = data.to_numpy()
+
+        sheet_6_df = pd.concat((sheet_6_df, trial_df.T), axis=1)
+
+    return sheet_6_df.T.sort_index(inplace=False)
+
 
 
 def calculate_summary_stats(combined_df: pd.DataFrame) -> pd.DataFrame:
