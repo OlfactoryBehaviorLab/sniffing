@@ -97,6 +97,20 @@ SHEET_5_COLUMNS = [
     "count",
 ]
 
+SHEET_6_COLUMNS = [
+    # Repeating Data
+    "ID",
+    "odor",
+    "conc",
+    # Trial Data
+    "type",
+    "result",
+    "correct",
+    "sniff_num",
+    "sniff_dur"
+]
+
+
 SUMMARY_COLUMN = [
     "TOTAL_PRE_SNIFFS",
     "TOTAL_POST_SNIFFS",
@@ -153,45 +167,22 @@ def repack_data(
     trial_type = h5_file.trial_parameters.loc[trials, "trial_type"]
     trial_results = h5_file.trial_parameters.loc[trials, "result"]
 
-    combined_df = pd.DataFrame(index=trials, columns=COLUMNS)
-
-    combined_df.loc[:, "ID"] = animal_ID
-    combined_df.loc[:, "odor"] = odor
-    combined_df.loc[:, "conc"] = concentration[-1]
-    combined_df.loc[:, "type"] = trial_type
-    combined_df.loc[:, "result"] = trial_results
-
-    inhale_counts.index = ["pre_odor_sniffs", "post_odor_sniffs"]
-
-    inhale_latencies.index = ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]
-
-    combined_df.loc[:, ["pre_odor_sniffs", "post_odor_sniffs"]] = inhale_counts.T
-    combined_df.loc[:, ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]] = (
-        inhale_latencies.T
-    )
     pre_fv_inhalation_durations, post_fv_inhalation_durations = unpack_three_durations(
         inhale_durations, trials, PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS
     )
 
-    combined_df.loc[:, ["pre_sniff_dur_3", "pre_sniff_dur_2", "pre_sniff_dur_1"]] = (
-        pre_fv_inhalation_durations
-    )
+    all_sniff_durations = unpack_all_durations(inhale_durations, trials, PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS)
+    all_sniff_durations = all_sniff_durations.sort_index()
 
-    combined_df.loc[:, ["post_sniff_dur_1", "post_sniff_dur_2", "post_sniff_dur_3"]] = (
-        post_fv_inhalation_durations
-    )
-    combined_df = combined_df.infer_objects().fillna("X")
-
-    summary_stats = calculate_summary_stats(combined_df)
-    summary_stats.index = combined_df.index[: summary_stats.shape[0]]
-    combined_df = pd.concat((combined_df, summary_stats), axis=1)
+    correct_nogo_trials = trial_results.loc[trial_results==2].index
+    correct_nogo_durations = unpack_all_durations(inhale_durations, correct_nogo_trials, PRE_ODOR_COUNT_TIME_MS, 2000)
+    correct_nogo_durations = correct_nogo_durations.sort_index()
 
 
 
     sheet_1 = output_sheet_1(
         animal_ID, odor, concentration, trial_type, trial_results, inhale_counts
     )
-
     sheet_2 = output_sheet_2(
         animal_ID, odor, concentration, trial_type, trial_results, pre_fv_inhalation_durations, post_fv_inhalation_durations,
     )
@@ -205,11 +196,6 @@ def repack_data(
         animal_ID, odor, concentration, trial_type, trial_results, bin_counts
     )
 
-
-
-    combined_file_path = output_dir.joinpath(
-        f"{animal_ID}-{concentration}-combined.xlsx"
-    )
     sheet_1_path = output_dir.joinpath(
         f"1_{animal_ID}-{concentration}-sniff_count.xlsx"
     )
@@ -220,7 +206,6 @@ def repack_data(
     sheet_4_path = output_dir.joinpath(f"4_{animal_ID}-{concentration}-lengths.xlsx")
     sheet_5_path = output_dir.joinpath(f"5_{animal_ID}-{concentration}-bins.xlsx")
 
-    tpe.queue_save_df(combined_df, combined_file_path)
     tpe.queue_save_df(sheet_1, sheet_1_path)
     tpe.queue_save_df(sheet_2, sheet_2_path)
     tpe.queue_save_df(sheet_3, sheet_3_path)
