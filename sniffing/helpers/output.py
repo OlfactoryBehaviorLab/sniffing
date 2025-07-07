@@ -163,9 +163,11 @@ def repack_data(
     odor = odor[odor != "blank"]
     concentration = h5_file.concentration
     trials = inhale_counts.columns.to_numpy()
-
     trial_type = h5_file.trial_parameters.loc[trials, "trial_type"]
     trial_results = h5_file.trial_parameters.loc[trials, "result"]
+
+    inhale_counts.index = ["pre_odor_sniffs", "post_odor_sniffs"]
+    inhale_latencies.index = ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]
 
     pre_fv_inhalation_durations, post_fv_inhalation_durations = unpack_three_durations(
         inhale_durations, trials, PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS
@@ -177,8 +179,6 @@ def repack_data(
     correct_nogo_trials = trial_results.loc[trial_results==2].index
     correct_nogo_durations = unpack_all_durations(inhale_durations, correct_nogo_trials, PRE_ODOR_COUNT_TIME_MS, 2000)
     correct_nogo_durations = correct_nogo_durations.sort_index()
-
-
 
     sheet_1 = output_sheet_1(
         animal_ID, odor, concentration, trial_type, trial_results, inhale_counts
@@ -244,7 +244,7 @@ def unpack_all_durations(
         post_fv_sniff_dur = dur[post_FV_ts & good_dur]
 
         dur_index_pre = np.arange(-pre_fv_sniff_dur.shape[0], 0)
-        dur_index_post = np.arange(1, post_fv_sniff_dur.shape[0])
+        dur_index_post = np.arange(1, post_fv_sniff_dur.shape[0]+1)
         durations = pd.Series(np.hstack((pre_fv_sniff_dur, post_fv_sniff_dur)), index=np.hstack((dur_index_pre, dur_index_post)), name=trial)
         all_durations = pd.concat((all_durations, durations), axis=1)
 
