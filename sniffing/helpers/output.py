@@ -163,32 +163,14 @@ def repack_data(
 
     inhale_counts.index = ["pre_odor_sniffs", "post_odor_sniffs"]
 
-    sheet_1 = output_sheet_1(
-        animal_ID, odor, concentration, trial_type, trial_results, inhale_counts
-    )
-
     inhale_latencies.index = ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]
-
-    sheet_3 = output_sheet_3(
-        animal_ID, odor, concentration, trial_type, trial_results, inhale_latencies
-    )
 
     combined_df.loc[:, ["pre_odor_sniffs", "post_odor_sniffs"]] = inhale_counts.T
     combined_df.loc[:, ["sniff_1_latency", "sniff_2_latency", "sniff_3_latency"]] = (
         inhale_latencies.T
     )
-    pre_fv_inhalation_durations, post_fv_inhalation_durations = unpack_inhale_durations(
+    pre_fv_inhalation_durations, post_fv_inhalation_durations = unpack_three_durations(
         inhale_durations, trials, PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS
-    )
-
-    sheet_2 = output_sheet_2(
-        animal_ID,
-        odor,
-        concentration,
-        trial_type,
-        trial_results,
-        pre_fv_inhalation_durations,
-        post_fv_inhalation_durations,
     )
 
     combined_df.loc[:, ["pre_sniff_dur_3", "pre_sniff_dur_2", "pre_sniff_dur_1"]] = (
@@ -204,12 +186,26 @@ def repack_data(
     summary_stats.index = combined_df.index[: summary_stats.shape[0]]
     combined_df = pd.concat((combined_df, summary_stats), axis=1)
 
+
+
+    sheet_1 = output_sheet_1(
+        animal_ID, odor, concentration, trial_type, trial_results, inhale_counts
+    )
+
+    sheet_2 = output_sheet_2(
+        animal_ID, odor, concentration, trial_type, trial_results, pre_fv_inhalation_durations, post_fv_inhalation_durations,
+    )
+    sheet_3 = output_sheet_3(
+        animal_ID, odor, concentration, trial_type, trial_results, inhale_latencies
+    )
     sheet_4 = output_sheet_4(
         animal_ID, odor, concentration, trial_type, trial_results, trial_lengths
     )
     sheet_5 = output_sheet_5(
         animal_ID, odor, concentration, trial_type, trial_results, bin_counts
     )
+
+
 
     combined_file_path = output_dir.joinpath(
         f"{animal_ID}-{concentration}-combined.xlsx"
@@ -232,7 +228,7 @@ def repack_data(
     tpe.queue_save_df(sheet_5, sheet_5_path)
 
 
-def unpack_inhale_durations(
+def unpack_three_durations(
     inhale_durations,
     trials,
     PRE_ODOR_COUNT_TIME_MS,  # noqa: N803
@@ -437,53 +433,6 @@ def output_sheet_5(
     return sheet_5_df.T.sort_index(inplace=False)
 
 
-def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
-    trial_name = trial_df.index.get_level_values(0).unique()[0]
-    pre_fv_durations = pd.Series(
-        np.zeros(3), name=trial_name, index=[2, 1, 0], dtype=object
-    )
-    trial_df.index = trial_df.index.droplevel(0)
-    durations = trial_df.loc["duration"]
-    timestamps = trial_df.loc["timestamps"]
-
-    timestamps_in_window = (timestamps >= PRE_ODOR_COUNT_TIME_MS) & (
-        timestamps < 0
-    )  # What timestamps are in our window
-    durations_in_window = durations[timestamps_in_window].reset_index(
-        drop=True
-    )  # Grab those durations and reset index
-    durations_in_window.index = durations_in_window.index.to_numpy()[
-        ::-1
-    ]  # Flip the index so the last duration becomes the first
-    shared_index = np.intersect1d(
-        pre_fv_durations.index, durations_in_window.index
-    )  # To avoid out-of-bounds indexing, find the durations that share an index with our series
-    pre_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index].astype(
-        object
-    )
-
-    return pre_fv_durations
-
-
-def _get_post_fv_inhales(trial_df: pd.DataFrame, POST_ODOR_COUNT_TIME_MS):  # noqa: N803
-    trial_name = trial_df.index.get_level_values(0).unique()[0]
-    post_fv_durations = pd.Series(
-        np.zeros(3), name=trial_name, index=[0, 1, 2], dtype=object
-    )
-    trial_df.index = trial_df.index.droplevel(0)
-    durations = trial_df.loc["duration"]
-    timestamps = trial_df.loc["timestamps"]
-
-    timestamps_in_window = (timestamps < POST_ODOR_COUNT_TIME_MS) & (timestamps >= 0)
-    durations_in_window = durations[timestamps_in_window].reset_index(drop=True)
-    shared_index = np.intersect1d(post_fv_durations.index, durations_in_window.index)
-    post_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index].astype(
-        object
-    )
-
-    return post_fv_durations
-
-
 def calculate_summary_stats(combined_df: pd.DataFrame) -> pd.DataFrame:
     go_trials_mask = combined_df["type"] == 1
     nogo_trials_mask = combined_df["type"] == 2
@@ -611,3 +560,50 @@ def calculate_summary_stats(combined_df: pd.DataFrame) -> pd.DataFrame:
     summary_stats = summary_stats.reset_index(drop=False, inplace=False)
     summary_stats.columns = ["Summary", "Stat"]
     return summary_stats
+
+
+def _get_pre_fv_inhales(trial_df: pd.DataFrame, PRE_ODOR_COUNT_TIME_MS):  # noqa: N803
+    trial_name = trial_df.index.get_level_values(0).unique()[0]
+    pre_fv_durations = pd.Series(
+        np.zeros(3), name=trial_name, index=[2, 1, 0], dtype=object
+    )
+    trial_df.index = trial_df.index.droplevel(0)
+    durations = trial_df.loc["duration"]
+    timestamps = trial_df.loc["timestamps"]
+
+    timestamps_in_window = (timestamps >= PRE_ODOR_COUNT_TIME_MS) & (
+        timestamps < 0
+    )  # What timestamps are in our window
+    durations_in_window = durations[timestamps_in_window].reset_index(
+        drop=True
+    )  # Grab those durations and reset index
+    durations_in_window.index = durations_in_window.index.to_numpy()[
+        ::-1
+    ]  # Flip the index so the last duration becomes the first
+    shared_index = np.intersect1d(
+        pre_fv_durations.index, durations_in_window.index
+    )  # To avoid out-of-bounds indexing, find the durations that share an index with our series
+    pre_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index].astype(
+        object
+    )
+
+    return pre_fv_durations
+
+
+def _get_post_fv_inhales(trial_df: pd.DataFrame, POST_ODOR_COUNT_TIME_MS):  # noqa: N803
+    trial_name = trial_df.index.get_level_values(0).unique()[0]
+    post_fv_durations = pd.Series(
+        np.zeros(3), name=trial_name, index=[0, 1, 2], dtype=object
+    )
+    trial_df.index = trial_df.index.droplevel(0)
+    durations = trial_df.loc["duration"]
+    timestamps = trial_df.loc["timestamps"]
+
+    timestamps_in_window = (timestamps < POST_ODOR_COUNT_TIME_MS) & (timestamps >= 0)
+    durations_in_window = durations[timestamps_in_window].reset_index(drop=True)
+    shared_index = np.intersect1d(post_fv_durations.index, durations_in_window.index)
+    post_fv_durations.loc[shared_index] = durations_in_window.loc[shared_index].astype(
+        object
+    )
+
+    return post_fv_durations
