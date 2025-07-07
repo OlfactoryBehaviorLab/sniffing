@@ -228,6 +228,37 @@ def repack_data(
     tpe.queue_save_df(sheet_5, sheet_5_path)
 
 
+def unpack_all_durations(
+        inhale_durations,
+        trials,
+        PRE_ODOR_COUNT_TIME_MS,  # noqa: N803
+        POST_ODOR_COUNT_TIME_MS,  # noqa: N803
+):
+    _inhale_durations = inhale_durations.loc[:, trials]
+    _inhale_groupby_trial = _inhale_durations.T.groupby("Trial")
+
+    all_durations = pd.DataFrame()
+
+    for trial, data in _inhale_groupby_trial:
+        data = data.loc[trial].T
+        ts = data['timestamps'].to_numpy()
+        dur = data['duration'].to_numpy()
+        pre_FV_ts = (PRE_ODOR_COUNT_TIME_MS <= ts) & (ts < 0)
+        post_FV_ts = (0 <= ts) & (ts < POST_ODOR_COUNT_TIME_MS)
+
+        good_dur = dur != 'X'
+
+        pre_fv_sniff_dur = dur[pre_FV_ts & good_dur]
+        post_fv_sniff_dur = dur[post_FV_ts & good_dur]
+
+        dur_index = np.arange(-pre_fv_sniff_dur.shape[0], post_fv_sniff_dur.shape[0])
+        durations = pd.Series(np.hstack((pre_fv_sniff_dur, post_fv_sniff_dur)), index=dur_index, name=trial)
+        all_durations = pd.concat((all_durations, durations), axis=1)
+
+    return all_durations.T
+
+
+
 def unpack_three_durations(
     inhale_durations,
     trials,
