@@ -194,8 +194,8 @@ def process_files(
                         frequency.oneside_moving_window_counts(
                             _trimmed_timestamps,
                             np.array((PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS)),
-                            100,
-                            50,
+                            BIN_SIZE,
+                            BIN_STEPS,
                         )
                     )
 

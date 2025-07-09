@@ -159,7 +159,7 @@ def main():
 
     fig.tight_layout()
     fig2.tight_layout()
-    plt.show(dpi=600)
+    plt.show()
 
     fig_path = output_path.joinpath("3D_ISB_freq.pdf")
     fig.savefig(fig_path, dpi=600)
