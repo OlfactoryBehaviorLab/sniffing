@@ -147,38 +147,6 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
             all_nogo_trial_traces.shape[1],
         )
 
-    # all_concentration_labels = list(concentration_dfs.keys())
-
-    # all_scores = pd.DataFrame(
-    #     index=all_concentration_labels, columns=["score", "shuffle_score"]
-    # )
-    # all_individual_scores = pd.DataFrame(
-    #     index=all_concentration_labels, columns=[np.arange(0, 20)]
-    # )
-    # for concentration in all_concentration_labels:
-    #     concentration_df = concentration_dfs[concentration]
-    #
-    #     scores, individual_scores, individual_CMS = (
-    #         classifiers.decode_trial_type_single(concentration_df, concentration)
-    #     )
-    #
-    #     shuffled_concentration_df = classifiers.shuffle_labels(concentration_df)
-    #
-    #     shuffled_scores, shuffled_individual_scores, shuffled_individual_CMS = (
-    #         classifiers.decode_trial_type_single(
-    #             shuffled_concentration_df, concentration
-    #         )
-    #     )
-    #
-    #     all_scores.loc[concentration] = scores.to_numpy().round(3)
-    #     all_individual_scores.loc[concentration] = individual_scores
-    #     all_scores.loc[concentration, "shuffle_score"] = (
-    #         shuffled_scores.to_numpy().round(3)
-    #     )
-
-    # all_scores_path = output_dir.joinpath("all_scores.xlsx")
-    # all_individual_scores_path = output_dir.joinpath("all_individual_scores.xlsx")
-
     f1_path = output_dir.joinpath("combined_count.xlsx")
     f2_path = output_dir.joinpath("combined_duration.xlsx")
     f3_path = output_dir.joinpath("combined_ISI.xlsx")
