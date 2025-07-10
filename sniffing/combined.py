@@ -93,63 +93,63 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
                 file6_nogo_df = pd.read_excel(animal_files[animal]["6_nogo"], index_col=[0])
                 all_f6_nogo_df = pd.concat((all_f6_nogo_df, file6_nogo_df.T), axis=1)
 
-            good_trials = windowed_bin_counts.columns
-
-            trial_types = animal_data_matrix["trial_type"]
-            go_trials = animal_data_matrix.loc[trial_types == 1].index
-            nogo_trials = animal_data_matrix.loc[trial_types == 2].index
-
-            go_trials = np.intersect1d(good_trials, go_trials)
-            nogo_trials = np.intersect1d(good_trials, nogo_trials)
-
-            # go_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, go_trials]
-            # nogo_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, nogo_trials]
-
-            go_trial_traces = all_trimmed_traces.loc[
-                PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, go_trials
-            ]
-            nogo_trial_traces = all_trimmed_traces.loc[
-                PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, nogo_trials
-            ]
-
-            go_trial_traces = go_trial_traces.replace("X", np.nan).infer_objects(
-                copy=False
-            )
-            nogo_trial_traces = nogo_trial_traces.replace("X", np.nan).infer_objects(
-                copy=False
-            )
-            go_trial_traces = go_trial_traces.dropna(axis=1).infer_objects(copy=False)
-            nogo_trial_traces = nogo_trial_traces.dropna(axis=1).infer_objects(
-                copy=False
-            )
-
-            zscore_go_trial_traces = classifiers.zscore_data(go_trial_traces)
-            zscore_nogo_trial_traces = classifiers.zscore_data(nogo_trial_traces)
-
-            all_go_trial_traces = pd.concat(
-                (all_go_trial_traces, zscore_go_trial_traces), axis=1
-            )
-            all_nogo_trial_traces = pd.concat(
-                (all_nogo_trial_traces, zscore_nogo_trial_traces), axis=1
-            )
+            # good_trials = windowed_bin_counts.columns
+            #
+            # trial_types = animal_data_matrix["trial_type"]
+            # go_trials = animal_data_matrix.loc[trial_types == 1].index
+            # nogo_trials = animal_data_matrix.loc[trial_types == 2].index
+            #
+            # go_trials = np.intersect1d(good_trials, go_trials)
+            # nogo_trials = np.intersect1d(good_trials, nogo_trials)
+            #
+            # # go_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, go_trials]
+            # # nogo_trial_counts = windowed_bin_counts.loc[PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, nogo_trials]
+            #
+            # go_trial_traces = all_trimmed_traces.loc[
+            #     PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, go_trials
+            # ]
+            # nogo_trial_traces = all_trimmed_traces.loc[
+            #     PRE_ODOR_COUNT_TIME_MS:POST_ODOR_COUNT_TIME_MS, nogo_trials
+            # ]
+            #
+            # go_trial_traces = go_trial_traces.replace("X", np.nan).infer_objects(
+            #     copy=False
+            # )
+            # nogo_trial_traces = nogo_trial_traces.replace("X", np.nan).infer_objects(
+            #     copy=False
+            # )
+            # go_trial_traces = go_trial_traces.dropna(axis=1).infer_objects(copy=False)
+            # nogo_trial_traces = nogo_trial_traces.dropna(axis=1).infer_objects(
+            #     copy=False
+            # )
+            #
+            # zscore_go_trial_traces = classifiers.zscore_data(go_trial_traces)
+            # zscore_nogo_trial_traces = classifiers.zscore_data(nogo_trial_traces)
+            #
+            # all_go_trial_traces = pd.concat(
+            #     (all_go_trial_traces, zscore_go_trial_traces), axis=1
+            # )
+            # all_nogo_trial_traces = pd.concat(
+            #     (all_nogo_trial_traces, zscore_nogo_trial_traces), axis=1
+            # )
 
         # Do combined analysis here
 
-        all_go_trial_traces.columns = np.repeat("go", all_go_trial_traces.shape[1])
-        all_nogo_trial_traces.columns = np.repeat(
-            "nogo", all_nogo_trial_traces.shape[1]
-        )
-
-        all_concentration_trials = pd.concat(
-            [all_go_trial_traces, all_nogo_trial_traces], axis=1
-        )
-        concentration_dfs[concentration] = all_concentration_trials.T
-        logging.info(
-            "\nConcentration %s has %i go trials and %i nogo trials",
-            concentration,
-            all_go_trial_traces.shape[1],
-            all_nogo_trial_traces.shape[1],
-        )
+        # all_go_trial_traces.columns = np.repeat("go", all_go_trial_traces.shape[1])
+        # all_nogo_trial_traces.columns = np.repeat(
+        #     "nogo", all_nogo_trial_traces.shape[1]
+        # )
+        #
+        # all_concentration_trials = pd.concat(
+        #     [all_go_trial_traces, all_nogo_trial_traces], axis=1
+        # )
+        # concentration_dfs[concentration] = all_concentration_trials.T
+        # logging.info(
+        #     "\nConcentration %s has %i go trials and %i nogo trials",
+        #     concentration,
+        #     all_go_trial_traces.shape[1],
+        #     all_nogo_trial_traces.shape[1],
+        # )
 
     f1_path = output_dir.joinpath("combined_count.xlsx")
     f2_path = output_dir.joinpath("combined_duration.xlsx")
