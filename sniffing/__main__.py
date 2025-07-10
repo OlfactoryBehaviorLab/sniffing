@@ -96,6 +96,13 @@ def main():
         action="store_true",
     )
     parser.add_argument("-o", "--output_dir", help="Path to output directory")
+    parser.add_argument(
+        "-p",
+        "--plot",
+        default=False,
+        action="store_true",
+        help="Plot trace figures"
+    )
     args = parser.parse_args()
 
     # if args.single and args.batch:
@@ -181,7 +188,7 @@ def main():
             for animal_dir in animal_dirs:
                 h5_files = list(animal_dir.glob("*.h5"))
                 _animal_h5_stats = process_files(
-                    h5_files, output_dir, ignore_errors=args.ignore_errors
+                    h5_files, output_dir, ignore_errors=args.ignore_errors, plot_figs=args.plot
                 )
                 all_h5_stats = pd.concat(
                     [all_h5_stats, _animal_h5_stats], ignore_index=True
