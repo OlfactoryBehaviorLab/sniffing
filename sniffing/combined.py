@@ -41,6 +41,7 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     all_f3_df = pd.DataFrame()
     all_f4_df = pd.DataFrame()
     all_f5_df = pd.DataFrame()
+    all_f5_nogo_df = pd.DataFrame()
     all_f6_df = pd.DataFrame()
     all_f6_nogo_df = pd.DataFrame()
 
@@ -82,6 +83,9 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
             if animal_files[animal]["5"] is not None:
                 file5_df = pd.read_excel(animal_files[animal]["5"], index_col=[0])
                 all_f5_df = pd.concat((all_f5_df, file5_df.T), axis=1)
+            if animal_files[animal]["5_nogo"] is not None:
+                file5_nogo_df = pd.read_excel(animal_files[animal]["5_nogo"], index_col=[0])
+                all_f5_nogo_df = pd.concat((all_f5_nogo_df, file5_nogo_df.T), axis=1)
             if animal_files[animal]["6"] is not None:
                 file6_df = pd.read_excel(animal_files[animal]["6"], index_col=[0])
                 all_f6_df = pd.concat((all_f6_df, file6_df.T), axis=1)
@@ -152,6 +156,7 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     f3_path = output_dir.joinpath("combined_ISI.xlsx")
     f4_path = output_dir.joinpath("combined_lengths.xlsx")
     f5_path = output_dir.joinpath("combined_bins.xlsx")
+    f5_correct_nogo_path = output_dir.joinpath("combined_bins_correct_nogo.xlsx")
     f6_path = output_dir.joinpath("combined_all_duration.xlsx")
     f6_correct_nogo_path = output_dir.joinpath("combined_all_duration_correct_nogo.xlsx")
 
@@ -163,6 +168,7 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     tpe.queue_save_df(all_f3_df.T, f3_path)
     tpe.queue_save_df(all_f4_df.T, f4_path)
     tpe.queue_save_df(all_f5_df.T, f5_path)
+    tpe.queue_save_df(all_f5_nogo_df.T, f5_correct_nogo_path)
     tpe.queue_save_df(all_f6_df.T, f6_path)
     tpe.queue_save_df(all_f6_nogo_df.T, f6_correct_nogo_path)
 

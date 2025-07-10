@@ -37,10 +37,11 @@ def get_spss_files(concentration_dir: pathlib.Path, animal) -> Tuple:
     file3 = _check_exists_or_warn(concentration_dir, "3*ISI.xlsx", animal)
     file4 = _check_exists_or_warn(concentration_dir, "4*lengths.xlsx", animal)
     file5 = _check_exists_or_warn(concentration_dir, "5*bins.xlsx", animal)
+    file5_nogo = _check_exists_or_warn(concentration_dir, "5*bins_correct_nogo.xlsx", animal)
     file6 = _check_exists_or_warn(concentration_dir, "6*all_sniff_durs.xlsx", animal)
     file6_nogo = _check_exists_or_warn(concentration_dir, "6*durs_correct_nogo.xlsx", animal)
 
-    return file1, file2, file3, file4, file5, file6, file6_nogo
+    return file1, file2, file3, file4, file5, file5_nogo, file6, file6_nogo
 
 
 def _check_exists_or_warn(conc_dir: pathlib.Path, file_name: str, animal: str):
@@ -218,7 +219,7 @@ def main():
                 if all_traces is None:
                     continue
 
-                file1, file2, file3, file4, file5, file6, file6_nogo = get_spss_files(
+                file1, file2, file3, file4, file5, file5_nogo, file6, file6_nogo = get_spss_files(
                     concentration_dir, animal_dir.name
                 )
 
@@ -231,6 +232,7 @@ def main():
                     "3": file3,
                     "4": file4,
                     "5": file5,
+                    "5_nogo": file5_nogo,
                     "6": file6,
                     "6_nogo": file6_nogo
                 }

@@ -180,6 +180,9 @@ def repack_data(
     correct_nogo_durations = unpack_all_durations(inhale_durations, correct_nogo_trials, PRE_ODOR_COUNT_TIME_MS, 2000)
     correct_nogo_durations = correct_nogo_durations.sort_index()
 
+    correct_nogo_bins = bin_counts[correct_nogo_trials]
+    correct_nogo_bins = correct_nogo_bins.sort_index()
+
     sheet_1 = output_sheet_1(
         animal_ID, odor, concentration, trial_type, trial_results, inhale_counts
     )
@@ -195,9 +198,15 @@ def repack_data(
     sheet_5 = output_sheet_5(
         animal_ID, odor, concentration, trial_type, trial_results, bin_counts
     )
-
-    sheet_6 = output_sheet_6(animal_ID, odor, concentration, trial_type, trial_results, all_sniff_durations)
-    sheet_6_correct_nogo = output_sheet_6(animal_ID, odor, concentration, trial_type, trial_results, correct_nogo_durations)
+    sheet_5_correct_nogo = output_sheet_5(
+        animal_ID, odor, concentration, trial_type, trial_results, correct_nogo_bins
+    )
+    sheet_6 = output_sheet_6(
+        animal_ID, odor, concentration, trial_type, trial_results, all_sniff_durations
+    )
+    sheet_6_correct_nogo = output_sheet_6(
+        animal_ID, odor, concentration, trial_type, trial_results, correct_nogo_durations
+    )
 
     sheet_1_path = output_dir.joinpath(
         f"1_{animal_ID}-{concentration}-sniff_count.xlsx"
@@ -208,6 +217,7 @@ def repack_data(
     sheet_3_path = output_dir.joinpath(f"3_{animal_ID}-{concentration}-ISI.xlsx")
     sheet_4_path = output_dir.joinpath(f"4_{animal_ID}-{concentration}-lengths.xlsx")
     sheet_5_path = output_dir.joinpath(f"5_{animal_ID}-{concentration}-bins.xlsx")
+    sheet_5_path_correct_nogo_path = output_dir.joinpath(f"5_{animal_ID}-{concentration}-bins_correct_nogo.xlsx")
     sheet_6_path = output_dir.joinpath(f"6_{animal_ID}-{concentration}-all_sniff_durs.xlsx")
     sheet_6_correct_nogo_path = output_dir.joinpath(f"6_{animal_ID}-{concentration}-all_sniff_durs_correct_nogo.xlsx")
 
@@ -216,6 +226,7 @@ def repack_data(
     tpe.queue_save_df(sheet_3, sheet_3_path)
     tpe.queue_save_df(sheet_4, sheet_4_path)
     tpe.queue_save_df(sheet_5, sheet_5_path)
+    tpe.queue_save_df(sheet_5_correct_nogo, sheet_5_path_correct_nogo_path)
     tpe.queue_save_df(sheet_6, sheet_6_path)
     tpe.queue_save_df(sheet_6_correct_nogo, sheet_6_correct_nogo_path)
 
