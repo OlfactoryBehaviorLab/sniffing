@@ -22,7 +22,7 @@ BIN_STEPS = 50  # ms
 PRE_ODOR_COUNT_TIME_MS = -350
 POST_ODOR_COUNT_TIME_MS = 350
 
-# logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.WARNING)
 plt.set_loglevel(level="warning")
 
 
@@ -45,7 +45,7 @@ def process_files(
         h5_files, total=len(h5_files), desc="Processing H5 Files:"
     ):
         try:
-            # print(f"Processing {h5_file_path.name}")
+            print(f"Processing {h5_file_path.name}")
 
             with DewanH5(
                 h5_file_path, drop_early_lick_trials=False, drop_cheating_trials=True
