@@ -39,7 +39,7 @@ def process_files(
     h5_stats = pd.DataFrame()
     tpe = async_io.AsyncIO(logger=logger)
     if not h5_files:
-        logger.error("No H5 Files provided!", h5_files)
+        logger.error("No H5 Files provided!")
         return None
     for h5_file_path in tqdm(
         h5_files, total=len(h5_files), desc="Processing H5 Files:"
