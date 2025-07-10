@@ -495,7 +495,6 @@ def output_sheet_6(
     return sheet_6_df.T.sort_index(inplace=False)
 
 
-
 def calculate_summary_stats(combined_df: pd.DataFrame) -> pd.DataFrame:
     go_trials_mask = combined_df["type"] == 1
     nogo_trials_mask = combined_df["type"] == 2

@@ -82,9 +82,6 @@ def main():
     parser.add_argument(
         "-c", "--combined", action="store_true", help="Run combined analysis"
     )
-    # parser.add_argument(
-    #     "-b", "--batch", action="store_true", help="Batch process H5 files"
-    # )
     parser.add_argument(
         "-d", "--data_dir", help="Path to data directory, implies --batch"
     )
@@ -105,21 +102,11 @@ def main():
     )
     args = parser.parse_args()
 
-    # if args.single and args.batch:
-    #     warnings.warn(
-    #         "Cannot batch process a single file! Defaulting to single file",
-    #         stacklevel=2,
-    #     )
-    #     args.batch = False
-
     if args.single and args.combined:
         raise argparse.ArgumentError(
             args.single,
             "Cannot run combined processing on a single file! Please specify a data directory!",
         )
-
-    # if args.combined and args.batch:
-    #     warnings.warn('Batch processing (-b) is implied for combined processing!', stacklevel=2)
 
     # If we specify single, we're only processing one file
     if args.single is not None:
