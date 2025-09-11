@@ -170,7 +170,7 @@ def main():
     if not args.combined:
         if data_dir:
             animal_dirs = data_dir.iterdir()
-            animal_dirs = [_dir for _dir in animal_dirs if "Z" not in _dir.name]
+            animal_dirs = [_dir for _dir in animal_dirs if "Z" not in _dir.name or _dir.is_dir()]
             all_h5_stats = pd.DataFrame()
             for animal_dir in animal_dirs:
                 h5_files = list(animal_dir.glob("*.h5"))
