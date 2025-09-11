@@ -23,7 +23,7 @@ dependencies = [
     "tqdm",
     "numba",
     "dewan-manual-curation",
-    "dewan-utils>=0.1.2",
+    "dewan-utils==0.1.3",
 ]
 
 [project.optional-dependencies]
