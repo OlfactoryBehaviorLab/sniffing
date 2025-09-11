@@ -383,7 +383,7 @@ jupyter = [
 requires-dist = [
     { name = "dewan-h5", specifier = ">=1.2.5" },
     { name = "dewan-manual-curation", git = "https://github.com/OlfactoryBehaviorLab/dewan_manual_curation" },
-    { name = "dewan-utils", specifier = ">=0.1.2" },
+    { name = "dewan-utils", specifier = "==0.1.3" },
     { name = "jupyter", marker = "extra == 'jupyter'" },
     { name = "matplotlib" },
     { name = "numba" },
@@ -396,7 +396,7 @@ provides-extras = ["jupyter"]
 
 [[package]]
 name = "dewan-utils"
-version = "0.1.2"
+version = "0.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "matplotlib" },
@@ -404,9 +404,9 @@ dependencies = [
     { name = "pandas" },
     { name = "xlsxwriter" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6a/91/a9674908b21ce0bcc1e9708ad555567b4e74da1b7b9e9848afe9718b573b/dewan_utils-0.1.2.tar.gz", hash = "sha256:34b014ae3eb18e7b874e71bf06bd03bbf88f1f6cb1a388a0ac9fe91e81393d63", size = 5440, upload-time = "2025-06-27T19:40:50.778Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/04/432b794f478cee1a88dbbb56684a95762a736c368fea261140de4c3a3a23/dewan_utils-0.1.3.tar.gz", hash = "sha256:d4ab886bff6e10d7983f8bb3ee0bcef2c9e758eddb1e5e3e8c26e40b7ad39eca", size = 5440, upload-time = "2025-09-11T22:28:28.857Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/89/799495c2976777575fa02aa1fa3d24ef0a937a8f0600b87279bc5027cfef/dewan_utils-0.1.2-py3-none-any.whl", hash = "sha256:82caf325181c416ec57215ee3ba75dcd4bd225f98657191f880201cd8990e0d1", size = 6211, upload-time = "2025-06-27T19:40:49.361Z" },
+    { url = "https://files.pythonhosted.org/packages/28/52/3f0fed379440a4469b6e415819ab14b1ca192eb27fe48e715ffd04731801/dewan_utils-0.1.3-py3-none-any.whl", hash = "sha256:6cbb68d353fc60f6e3d1cf77731cb1b86f58a8a5ec1485115cb67d02bcc1d3a8", size = 6188, upload-time = "2025-09-11T22:28:27.769Z" },
 ]
 
 [[package]]
