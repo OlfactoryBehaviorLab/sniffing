@@ -244,8 +244,11 @@ def unpack_all_durations(
 
     for trial, data in _inhale_groupby_trial:
         data = data.loc[trial].T
-        ts = data['timestamps'].to_numpy()
-        dur = data['duration'].to_numpy()
+        ts = data['timestamps']
+        dur = data['duration']
+        ts = ts[~ts.isna()].to_numpy()
+        dur = dur[~dur.isna()].to_numpy()
+
         pre_FV_ts = (PRE_ODOR_COUNT_TIME_MS <= ts) & (ts < 0)
         post_FV_ts = (0 <= ts) & (ts < POST_ODOR_COUNT_TIME_MS)
 
