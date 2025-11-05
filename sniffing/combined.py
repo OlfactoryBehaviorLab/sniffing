@@ -1,14 +1,13 @@
 import logging
 from functools import reduce
-from warnings import warn
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 
 from tqdm.auto import tqdm
 
-from .process_files import PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS
-
-from .helpers import classifiers, async_io
+from .helpers import async_io
 
 pd.set_option("future.no_silent_downcasting", True)
 logging.basicConfig(level=logging.NOTSET, filename="trial_nums.log", encoding="utf-8")
