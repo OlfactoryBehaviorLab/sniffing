@@ -168,6 +168,7 @@ def main():
         output_dir.mkdir(exist_ok=True)
 
     if not args.combined:
+        # Batch Mode
         if data_dir:
             animal_dirs = data_dir.iterdir()
             animal_dirs = [_dir for _dir in animal_dirs if "Z" not in _dir.name and _dir.is_dir()]
@@ -185,6 +186,7 @@ def main():
         elif file_path:
             _ = process_files([file_path], output_dir)
     else:
+        # Combined Mode
         concentration_files = {}
         animal_dirs = [_dir for _dir in data_dir.iterdir() if _dir.is_dir()]
 
