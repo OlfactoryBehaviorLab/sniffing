@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from pandas import Series
-
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 def plot_multi_traces(traces: list[Series], trial_name) -> None:
     """

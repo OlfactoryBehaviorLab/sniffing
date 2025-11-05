@@ -97,7 +97,7 @@ def main():
         "-p",
         "--plot",
         default=True,
-        action="store_true",
+        action="store_false",
         help="Plot trace figures"
     )
     args = parser.parse_args()
