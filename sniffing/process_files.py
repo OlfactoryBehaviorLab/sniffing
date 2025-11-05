@@ -19,7 +19,7 @@ MAX_POST_FV_TIME = 2000  # ms after FV
 BIN_SIZE = 100  # ms
 BIN_STEPS = 50  # ms
 
-PRE_ODOR_COUNT_TIME_MS = -350
+PRE_ODOR_COUNT_TIME_MS = -2000
 POST_ODOR_COUNT_TIME_MS = 350
 
 logging.basicConfig(level=logging.WARNING)
