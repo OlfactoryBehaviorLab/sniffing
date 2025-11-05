@@ -25,12 +25,12 @@ def animals_to_skip(concentration_files: dict[str, dict]) -> tuple[list, list]:
     return good_animals, bad_animals
 
 
-def process_combined(concentration_files: dict[str, dict], output_dir):
+def process_combined(concentration_files: dict[str, dict], param_files: list[Path], output_dir):
     good_animals, bad_animals = animals_to_skip(concentration_files)
-    warn(
-        f"{bad_animals} are missing some concentrations and will be skipped!",
-        stacklevel=2,
-    )
+    # warn(
+    #     f"{bad_animals} are missing some concentrations and will be skipped!",
+    #     stacklevel=2,
+    # )
 
     concentration_dfs = {}
     tpe = async_io.AsyncIO()
@@ -150,6 +150,12 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
         #     all_nogo_trial_traces.shape[1],
         # )
 
+    combined_params = pd.DataFrame()
+    for param_file in param_files:
+        params = pd.read_excel(param_file, index_col=0)
+        combined_params = pd.concat([combined_params, params], axis=0)
+
+
     f1_path = output_dir.joinpath("combined_count.xlsx")
     f2_path = output_dir.joinpath("combined_duration.xlsx")
     f3_path = output_dir.joinpath("combined_ISI.xlsx")
@@ -158,6 +164,8 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     f5_correct_nogo_path = output_dir.joinpath("combined_bins_correct_nogo.xlsx")
     f6_path = output_dir.joinpath("combined_all_duration.xlsx")
     f6_correct_nogo_path = output_dir.joinpath("combined_all_duration_correct_nogo.xlsx")
+
+    params_path = output_dir.joinpath("all_params.xlsx")
 
     # tpe.queue_save_df(all_scores, all_scores_path)
     # tpe.queue_save_df(all_individual_scores, all_individual_scores_path)
@@ -170,5 +178,6 @@ def process_combined(concentration_files: dict[str, dict], output_dir):
     tpe.queue_save_df(all_f5_nogo_df.T, f5_correct_nogo_path)
     tpe.queue_save_df(all_f6_df.T, f6_path)
     tpe.queue_save_df(all_f6_nogo_df.T, f6_correct_nogo_path)
+    tpe.queue_save_df(combined_params, params_path)
 
     tpe.shutdown(wait=True)

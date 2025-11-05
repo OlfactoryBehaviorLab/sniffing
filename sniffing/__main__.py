@@ -188,7 +188,8 @@ def main():
     else:
         # Combined Mode
         concentration_files = {}
-        animal_dirs = [_dir for _dir in data_dir.iterdir() if _dir.is_dir()]
+        param_files = []
+        animal_dirs = [_dir for _dir in data_dir.iterdir() if "Z" not in _dir.name and _dir.is_dir()]
 
         for animal_dir in animal_dirs:
             concentration_dirs = [
@@ -233,7 +234,9 @@ def main():
                     "6_nogo": file6_nogo
                 }
 
-        process_combined(concentration_files, output_dir)
+            param_files.append(animal_dir.joinpath("all_processing_params.xlsx"))
+
+        process_combined(concentration_files, param_files, output_dir)
 
 
 if __name__ == "__main__":
