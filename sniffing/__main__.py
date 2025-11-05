@@ -96,7 +96,7 @@ def main():
     parser.add_argument(
         "-p",
         "--plot",
-        default=False,
+        default=True,
         action="store_true",
         help="Plot trace figures"
     )
