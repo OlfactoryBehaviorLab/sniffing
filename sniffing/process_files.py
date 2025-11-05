@@ -37,6 +37,7 @@ def process_files(
 ):
     logger = logging.getLogger(__name__)
     h5_stats = pd.DataFrame()
+    processing_params = pd.DataFrame()
     tpe = async_io.AsyncIO(logger=logger)
     if not h5_files:
         logger.error("No H5 Files provided!")
@@ -79,6 +80,23 @@ def process_files(
                     )
                 )
                 h5_stats = pd.concat((h5_stats, h5_trial_info), axis=1)
+
+                params_output = pd.Series(
+                    (
+                        h5.mouse,
+                        h5.concentration,
+                        LOWER_FILTER_BAND,
+                        UPPER_FILTER_BAND,
+                        PRE_FV_TIME,
+                        MAX_POST_FV_TIME,
+                        BIN_SIZE,
+                        BIN_STEPS,
+                        PRE_ODOR_COUNT_TIME_MS,
+                        POST_ODOR_COUNT_TIME_MS,
+                    )
+                )
+                processing_params = pd.concat((processing_params, params_output), axis=1)
+
 
                 inhale_counts = pd.DataFrame(
                     index=[PRE_ODOR_COUNT_TIME_MS, POST_ODOR_COUNT_TIME_MS]
@@ -291,6 +309,23 @@ def process_files(
     ]
     stats_output_path = file_output_dir.parent.joinpath("all_h5_stats.xlsx")
     tpe.queue_save_df(h5_stats, stats_output_path)
+
+    processing_params = processing_params.T
+    processing_params.columns = [
+        "Animal",
+        "Conc",
+        "Lower Filter Band (Hz)",
+        "Upper Filter Band (Hz)",
+        "PRE FV Time",
+        "MAX Post FV Time",
+        "Count Bin Size",
+        "Bin Step Size",
+        "Pre Odor Count Time (mS)",
+        "Post Odor Count Time (mS)"
+    ]
+
+    params_path = file_output_dir.parent.joinpath('all_processing_params.xlsx')
+    tpe.queue_save_df(processing_params, params_path)
 
     tpe.shutdown(wait=True)
     return h5_stats
