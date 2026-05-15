@@ -159,10 +159,15 @@ def repack_data(
     tpe: AsyncIO,
 ):
     animal_ID = h5_file.mouse
-    odor = h5_file.odors
-    odor = odor[odor != "blank"]
-    concentration = h5_file.concentration
+    odors = h5_file.odors
     trials = inhale_counts.columns.to_numpy()
+
+    if "blank" in odors:
+        odor = odors[odors != "blank"] # For sensitivity there's only one odor
+    else:
+        odor = h5_file.trial_parameters.loc[trials, "odor"] # For discrimination there are more than 1
+
+    concentration = h5_file.concentration
     trial_type = h5_file.trial_parameters.loc[trials, "trial_type"]
     trial_results = h5_file.trial_parameters.loc[trials, "result"]
 
